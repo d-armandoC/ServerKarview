@@ -32,21 +32,16 @@ public class DatoSpksPK implements Serializable {
     @Temporal(TemporalType.TIME)
     private Date hora;
     @Basic(optional = false)
-    @Column(name = "fecha_hora_registro")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechaHoraRegistro;
-    @Basic(optional = false)
     @Column(name = "id_sky_evento")
     private int idSkyEvento;
 
     public DatoSpksPK() {
     }
 
-    public DatoSpksPK(int idEquipo, Date fecha, Date hora, Date fechaHoraRegistro, int idSkyEvento) {
+    public DatoSpksPK(int idEquipo, Date fecha, Date hora, int idSkyEvento) {
         this.idEquipo = idEquipo;
         this.fecha = fecha;
         this.hora = hora;
-        this.fechaHoraRegistro = fechaHoraRegistro;
         this.idSkyEvento = idSkyEvento;
     }
 
@@ -74,14 +69,6 @@ public class DatoSpksPK implements Serializable {
         this.hora = hora;
     }
 
-    public Date getFechaHoraRegistro() {
-        return fechaHoraRegistro;
-    }
-
-    public void setFechaHoraRegistro(Date fechaHoraRegistro) {
-        this.fechaHoraRegistro = fechaHoraRegistro;
-    }
-
     public int getIdSkyEvento() {
         return idSkyEvento;
     }
@@ -96,7 +83,6 @@ public class DatoSpksPK implements Serializable {
         hash += (int) idEquipo;
         hash += (fecha != null ? fecha.hashCode() : 0);
         hash += (hora != null ? hora.hashCode() : 0);
-        hash += (fechaHoraRegistro != null ? fechaHoraRegistro.hashCode() : 0);
         hash += (int) idSkyEvento;
         return hash;
     }
@@ -117,9 +103,6 @@ public class DatoSpksPK implements Serializable {
         if ((this.hora == null && other.hora != null) || (this.hora != null && !this.hora.equals(other.hora))) {
             return false;
         }
-        if ((this.fechaHoraRegistro == null && other.fechaHoraRegistro != null) || (this.fechaHoraRegistro != null && !this.fechaHoraRegistro.equals(other.fechaHoraRegistro))) {
-            return false;
-        }
         if (this.idSkyEvento != other.idSkyEvento) {
             return false;
         }
@@ -128,7 +111,7 @@ public class DatoSpksPK implements Serializable {
 
     @Override
     public String toString() {
-        return "com.kradac.karview.entities.historic.DatoSpksPK[ idEquipo=" + idEquipo + ", fecha=" + fecha + ", hora=" + hora + ", fechaHoraRegistro=" + fechaHoraRegistro + ", idSkyEvento=" + idSkyEvento + " ]";
+        return "com.kradac.karview.entities.historic.DatoSpksPK[ idEquipo=" + idEquipo + ", fecha=" + fecha + ", hora=" + hora + ", idSkyEvento=" + idSkyEvento + " ]";
     }
     
 }

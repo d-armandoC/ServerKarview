@@ -297,40 +297,40 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                     }
                 }
 
-//                try {
-//                    dsjc.create(new DatoSpks(new DatoSpksPK(e.getIdEquipo(), objCalDevice.getTime(), objCalDevice.getTime(), se.getIdSkyEvento()), new Date(), latitud, longitud, speed, course,
-//                            Short.parseShort("" + gpio.charAt(8)),
-//                            Short.parseShort("" + gpio.charAt(7)),
-//                            Short.parseShort("" + gpio.charAt(6)),
-//                            Short.parseShort("" + gpio.charAt(5)),
-//                            Short.parseShort("" + gpio.charAt(4)),
-//                            Short.parseShort("" + gpio.charAt(3)),
-//                            Short.parseShort("" + gpio.charAt(2)),
-//                            Short.parseShort("" + gpio.charAt(1)),
-//                            Short.parseShort("" + gpio.charAt(0)),
-//                            0, ""));
-//                    if (se.getIdSkyEvento() == 12 || se.getIdSkyEvento() == 21) {
-//                        u.executeProcedureExcesoVelocidades(v.getIdVehiculo(), speed);
+                try {
+                    dsjc.create(new DatoSpks(new DatoSpksPK(e.getIdEquipo(), objCalDevice.getTime(), objCalDevice.getTime(), se.getIdSkyEvento()), new Date(), latitud, longitud, speed, course,
+                            Short.parseShort("" + gpio.charAt(8)),
+                            Short.parseShort("" + gpio.charAt(7)),
+                            Short.parseShort("" + gpio.charAt(6)),
+                            Short.parseShort("" + gpio.charAt(5)),
+                            Short.parseShort("" + gpio.charAt(4)),
+                            Short.parseShort("" + gpio.charAt(3)),
+                            Short.parseShort("" + gpio.charAt(2)),
+                            Short.parseShort("" + gpio.charAt(1)),
+                            Short.parseShort("" + gpio.charAt(0)),
+                            0, ""));
+                    if (se.getIdSkyEvento() == 12 || se.getIdSkyEvento() == 21) {
+                        u.executeProcedureExcesoVelocidades(v.getIdVehiculo(), speed);
+                    }
+//                    if (p.getIdPunto() > 1) {
+//                        u.executeProcedurePapeletaDespachos(v.getIdVehiculo(), p.getIdPunto(), objCalDevice.getTime(), speed);
 //                    }
-////                    if (p.getIdPunto() > 1) {
-////                        u.executeProcedurePapeletaDespachos(v.getIdVehiculo(), p.getIdPunto(), objCalDevice.getTime(), speed);
-////                    }
-////                    u.executeProcedureAsignarRutaSkp(v.getIdVehiculo(), objCalDevice.getTime());
-//                    sendMails();
-//                } catch (PreexistingEntityException ex) {
-//                    System.out.println("Dato ya Existe [" + this.data + "]");
-//                    dijc.create(new DatoInvalidos(5, new Date(), e.getEquipo(), this.data));
-//                } catch (Exception ex) {
-//                    System.out.println("Excepcion TCP [" + this.data + "] [" + ex.getMessage() + "]");
-//                    dijc.create(new DatoInvalidos(2, new Date(), e.getEquipo(), this.data, ex.getMessage()));
-//                }
+//                    u.executeProcedureAsignarRutaSkp(v.getIdVehiculo(), objCalDevice.getTime());
+                    sendMails();
+                } catch (PreexistingEntityException ex) {
+                    System.out.println("Dato ya Existe [" + this.data + "]");
+                    dijc.create(new DatoInvalidos(5, new Date(), e.getEquipo(), this.data));
+                } catch (Exception ex) {
+                    System.out.println("Excepcion TCP [" + this.data + "] [" + ex.getMessage() + "]");
+                    dijc.create(new DatoInvalidos(2, new Date(), e.getEquipo(), this.data, ex.getMessage()));
+                }
             } else {
-//                dijc.create(new DatoInvalidos(3, new Date(), auxDevice, this.data));
-//                System.out.println("No se encuentra registrado [" + this.data + "].");
+                dijc.create(new DatoInvalidos(3, new Date(), auxDevice, this.data));
+                System.out.println("No se encuentra registrado [" + this.data + "].");
             }
         } else {
-//            dijc.create(new DatoInvalidos(4, new Date(), e.getEquipo(), this.data));
-//            System.out.println("Poblemas de Fecha y Hora [" + this.data + "]");
+            dijc.create(new DatoInvalidos(4, new Date(), e.getEquipo(), this.data));
+            System.out.println("Poblemas de Fecha y Hora [" + this.data + "]");
         }
     }
 

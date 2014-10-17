@@ -3,6 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package com.kradac.karview.entities.historic;
 
 import java.io.Serializable;
@@ -14,6 +15,8 @@ import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -28,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "DatoSpks.findByIdEquipo", query = "SELECT d FROM DatoSpks d WHERE d.datoSpksPK.idEquipo = :idEquipo"),
     @NamedQuery(name = "DatoSpks.findByFecha", query = "SELECT d FROM DatoSpks d WHERE d.datoSpksPK.fecha = :fecha"),
     @NamedQuery(name = "DatoSpks.findByHora", query = "SELECT d FROM DatoSpks d WHERE d.datoSpksPK.hora = :hora"),
-    @NamedQuery(name = "DatoSpks.findByFechaHoraRegistro", query = "SELECT d FROM DatoSpks d WHERE d.datoSpksPK.fechaHoraRegistro = :fechaHoraRegistro"),
+    @NamedQuery(name = "DatoSpks.findByFechaHoraRegistro", query = "SELECT d FROM DatoSpks d WHERE d.fechaHoraRegistro = :fechaHoraRegistro"),
     @NamedQuery(name = "DatoSpks.findByIdSkyEvento", query = "SELECT d FROM DatoSpks d WHERE d.datoSpksPK.idSkyEvento = :idSkyEvento"),
     @NamedQuery(name = "DatoSpks.findByLatitud", query = "SELECT d FROM DatoSpks d WHERE d.latitud = :latitud"),
     @NamedQuery(name = "DatoSpks.findByLongitud", query = "SELECT d FROM DatoSpks d WHERE d.longitud = :longitud"),
@@ -46,10 +49,13 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "DatoSpks.findByOdometro", query = "SELECT d FROM DatoSpks d WHERE d.odometro = :odometro"),
     @NamedQuery(name = "DatoSpks.findByDireccion", query = "SELECT d FROM DatoSpks d WHERE d.direccion = :direccion")})
 public class DatoSpks implements Serializable {
-
     private static final long serialVersionUID = 1L;
     @EmbeddedId
     protected DatoSpksPK datoSpksPK;
+    @Basic(optional = false)
+    @Column(name = "fecha_hora_registro")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaHoraRegistro;
     @Basic(optional = false)
     @Column(name = "latitud")
     private double latitud;
@@ -103,8 +109,9 @@ public class DatoSpks implements Serializable {
         this.datoSpksPK = datoSpksPK;
     }
 
-    public DatoSpks(DatoSpksPK datoSpksPK, double latitud, double longitud, double velocidad, double rumbo, short g1, short g2, short sal, short bateria, short v1, short v2, short gsm, short gps, short ign, int odometro, String direccion) {
+    public DatoSpks(DatoSpksPK datoSpksPK, Date fechaHoraRegistro, double latitud, double longitud, double velocidad, double rumbo, short g1, short g2, short sal, short bateria, short v1, short v2, short gsm, short gps, short ign, int odometro, String direccion) {
         this.datoSpksPK = datoSpksPK;
+        this.fechaHoraRegistro = fechaHoraRegistro;
         this.latitud = latitud;
         this.longitud = longitud;
         this.velocidad = velocidad;
@@ -122,26 +129,8 @@ public class DatoSpks implements Serializable {
         this.direccion = direccion;
     }
 
-    public DatoSpks(int idEquipo, Date fecha, Date hora, Date fechaHoraRegistro, int idSkyEvento) {
-        this.datoSpksPK = new DatoSpksPK(idEquipo, fecha, hora, fechaHoraRegistro, idSkyEvento);
-    }
-
-  public DatoSpks(DatoSpksPK datoSkpsPK, Date fechaHoraReg, double latitud, double longitud, double velocidad, double rumbo, short g1, short g2, short sal, short bateria, short v1, short v2, short gsm, short gps, short ign) {
-        this.datoSpksPK = datoSkpsPK;
-        //this. = fechaHoraReg;
-        this.latitud = latitud;
-        this.longitud = longitud;
-        this.velocidad = velocidad;
-        this.rumbo = rumbo;
-        this.g1 = g1;
-        this.g2 = g2;
-        this.sal = sal;
-        this.bateria = bateria;
-        this.v1 = v1;
-        this.v2 = v2;
-        this.gsm = gsm;
-        this.gps = gps;
-        this.ign = ign;
+    public DatoSpks(int idEquipo, Date fecha, Date hora, int idSkyEvento) {
+        this.datoSpksPK = new DatoSpksPK(idEquipo, fecha, hora, idSkyEvento);
     }
 
     public DatoSpksPK getDatoSpksPK() {
@@ -150,6 +139,14 @@ public class DatoSpks implements Serializable {
 
     public void setDatoSpksPK(DatoSpksPK datoSpksPK) {
         this.datoSpksPK = datoSpksPK;
+    }
+
+    public Date getFechaHoraRegistro() {
+        return fechaHoraRegistro;
+    }
+
+    public void setFechaHoraRegistro(Date fechaHoraRegistro) {
+        this.fechaHoraRegistro = fechaHoraRegistro;
     }
 
     public double getLatitud() {
@@ -296,5 +293,5 @@ public class DatoSpks implements Serializable {
     public String toString() {
         return "com.kradac.karview.entities.historic.DatoSpks[ datoSpksPK=" + datoSpksPK + " ]";
     }
-
+    
 }

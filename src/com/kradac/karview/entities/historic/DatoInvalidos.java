@@ -77,6 +77,13 @@ public class DatoInvalidos implements Serializable {
         this.trama = trama;
         this.excepcion = excepcion;
     }
+    
+    public DatoInvalidos(int idDatoInvalido, Date fechaHoraRegistro, String equipo, String trama) {
+         this.idDatoInvalido = idDatoInvalido;
+        this.fechaHoraRegistro = fechaHoraRegistro;
+        this.equipo = equipo;
+        this.trama = trama;
+    }
 
     public Integer getIdDatoInvalido() {
         return idDatoInvalido;
