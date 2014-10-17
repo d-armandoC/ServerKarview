@@ -1,0 +1,279 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.kradac.karview.window;
+
+
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Calendar;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+
+/**
+ *
+ * @author Dalton
+ */
+public class FrameUpload extends javax.swing.JFrame {
+
+    private File f = null;
+
+    /**
+     * Controladores de Conexión a la BD Logica
+     */
+
+
+    /**
+     * Controladores de Conexión a la BD Historica
+     */
+
+    /**
+     * POJOS para almacenar la informacion de retorno de la consulta Fastracks
+     */
+ 
+    private final Utilities u;
+
+    /**
+     * POJOS para almacenar la informacion de retorno de la consulta Skp
+     */
+//    private SkyEventos se;
+
+    /**
+     * Creates new form FrameUpload
+     */
+    public FrameUpload() {
+        initComponents();
+
+/// controladores
+        u = new Utilities();
+    }
+
+    public void proccessImportFastracks(String data) {
+        //[3][2014-07-05 00:00:00][GPRMC008019204071423595803589309S079121290W0000002000    10.62.63.140049456920000000000000000000]
+        boolean isCorrect = false;
+        if (data.contains("[")) {
+            String dataPart[] = data.replace("][", "##").split("##");
+            if (Integer.parseInt(dataPart[0].replace("[", "")) == 3) {
+                data = dataPart[2].replace("]", "");
+                isCorrect = true;
+            }
+        } else {
+            isCorrect = true;
+        }
+        if (isCorrect) {
+            String trama = data.replaceAll(" ", "");
+            String dataTrama[] = new String[2];
+            dataTrama[0] = trama.substring(0, 53);
+            dataTrama[1] = trama.substring(53, trama.length());
+
+            //GPRMI::0080223::210899::185948::00000000N::000000000E::000::000::1000  10.61.180.2310000879080000000000000000000
+            //GPRMV::0080181::270513::202430::03596891S::079118209W::062::000::1000   10.61.61.1810000084410000000000000000000
+//     
+        }
+    }
+
+    public void proccessImportSkps(String data) {
+        //[3][2014-07-18 00:00:34][0@8488ￌ              BUS1697       3  14 GPRMC,050036.00,A,0357.62330,S,07913.03412,W,0.000,0.0,180714,,,D*52]
+        boolean isCorrect = false;
+        if (data.contains("[")) {
+            String dataPart[] = data.replace("][", "##").split("##");
+            try {
+                int typeData = Integer.parseInt(dataPart[0].replace("[", ""));
+                if (typeData == 3 || typeData == 4) {
+                    data = dataPart[2].replace("]", "").substring(9);
+                    isCorrect = true;
+                }
+            } catch (NumberFormatException ex) {
+                isCorrect = false;
+            }
+
+        } else {
+            isCorrect = true;
+        }
+        if (isCorrect) {
+            String[] dataTrama = data.split(",");
+
+            Calendar objCalDevice = u.validateDate(dataTrama[9], dataTrama[1].substring(0, dataTrama[1].lastIndexOf('.')), true);
+           
+        }
+    }
+
+    public void readFile(File n) {
+        FileInputStream fstream = null;
+        boolean isSkp = false;
+        try {
+            fstream = new FileInputStream(n);
+            if (n.getName().contains("skp")) {
+                isSkp = true;
+            }
+            try (DataInputStream entrada = new DataInputStream(fstream)) {
+                BufferedReader buffer = new BufferedReader(new InputStreamReader(entrada));
+                String data;
+                while ((data = buffer.readLine()) != null) {
+                    if (isSkp) {
+                        proccessImportSkps(data);
+                    } else {
+                        if (data.length() > 75 && data.length() < 130) {
+                            proccessImportFastracks(data);
+                        }
+                    }
+                }
+                btnStart.setEnabled(true);
+                JOptionPane.showMessageDialog(this, "Importación realizada correctamente.");
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Lectura/Escritura del archivo de Conexión ha fallado.");
+            }
+        } catch (FileNotFoundException ex) {
+            JOptionPane.showMessageDialog(this, "El Archivo no se encuentra.");
+        } finally {
+            try {
+                fstream.close();
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Lectura/Escritura del archivo de Conexión ha fallado.");
+            }
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        buttonGroup1 = new javax.swing.ButtonGroup();
+        btnChoose = new javax.swing.JButton();
+        txtPath = new javax.swing.JTextField();
+        btnStart = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Importación de Archivos");
+        setIconImage(new javax.swing.ImageIcon(getClass().getResource("/com/kradac/kbus/images/upload.png")).getImage());
+
+        btnChoose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/kradac/karview/images/upload.png"))); // NOI18N
+        btnChoose.setText("Escoger");
+        btnChoose.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnChooseActionPerformed(evt);
+            }
+        });
+
+        btnStart.setText("Empezar");
+        btnStart.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStartActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(txtPath, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnChoose)
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnStart)
+                .addGap(157, 157, 157))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnChoose, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtPath))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addComponent(btnStart)
+                .addContainerGap())
+        );
+
+        pack();
+        setLocationRelativeTo(null);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void btnChooseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChooseActionPerformed
+        JFileChooser fc = new JFileChooser();
+        //Mostrar la ventana para abrir archivo y recoger la respuesta
+        //En el parámetro del showOpenDialog se indica la ventana
+        //  al que estará asociado. Con el valor this se asocia a la
+        //  ventana que la abre.
+        int respuesta = fc.showOpenDialog(this);
+        //Comprobar si se ha pulsado Aceptar
+        if (respuesta == JFileChooser.APPROVE_OPTION) {
+            //Crear un objeto File con el archivo elegido
+            f = fc.getSelectedFile();
+            //Mostrar el nombre del archvivo en un campo de texto
+            txtPath.setText(f.getAbsolutePath());
+        }
+    }//GEN-LAST:event_btnChooseActionPerformed
+
+    private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
+        if (f != null) {
+            btnStart.setEnabled(false);
+            readFile(f);
+        } else {
+            JOptionPane.showMessageDialog(this, "No ha escogido un archivo.");
+        }
+    }//GEN-LAST:event_btnStartActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(FrameUpload.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(FrameUpload.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(FrameUpload.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(FrameUpload.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new FrameUpload().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnChoose;
+    private javax.swing.JButton btnStart;
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JTextField txtPath;
+    // End of variables declaration//GEN-END:variables
+}
