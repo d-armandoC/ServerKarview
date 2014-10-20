@@ -139,7 +139,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         else if (auxdata.indexOf("0420") == 0) {
             System.out.println("Trama SKP+ +param: [" + auxdata + "]");
             u.sendToFile(3, "skp", this.data);
-//            processDataNormal(this.data);
+            tramaSKPparam_mas_mas(this.data.substring(11));
         } 
         else if (auxdata.indexOf("00@8488") == 0) { // 0@8488ￌ
             System.out.println("Trama SKP+ -param: [" + auxdata + "]");
@@ -151,11 +151,11 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             processDataNormal(this.data.substring(9));
         } else {
             System.err.println("Trama sin Procesar: [" + auxdata + "]");
-//            if (registered) {
-//                dijc.create(new DatoInvalidos(1, new Date(), e.getEquipo(), this.data));
-//            } else {
-//                dijc.create(new DatoInvalidos(1, new Date(), "", this.data));
-//            }
+            if (registered) {
+                dijc.create(new DatoInvalidos(1, new Date(), e.getEquipo(), this.data));
+            } else {
+                dijc.create(new DatoInvalidos(1, new Date(), "", this.data));
+            }
         }
     }
 
@@ -172,6 +172,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        System.out.println("exception");
 //         Close the connection when an exception is raised.
         if (cause.toString().equals("io.netty.handler.timeout.ReadTimeoutException")) {
             dijc.create(new DatoInvalidos(7, new Date(), e.getEquipo(), this.data, cause.toString()));
@@ -333,6 +334,117 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             System.out.println("Poblemas de Fecha y Hora [" + this.data + "]");
         }
     }
+    
+    private void tramaSKPparam_mas_mas(String trama) {
+        String[] dataTrama = trama.split(",");
+        Calendar objCalDevice = u.validateDate(dataTrama[10], dataTrama[2].substring(0, dataTrama[2].lastIndexOf('.')), true);
+        if (objCalDevice != null) {
+            boolean haveSpace = true;
+            String header = dataTrama[0].trim();
+
+            while (haveSpace) {
+                header = header.replace("  ", " ");
+                haveSpace = header.contains("  ");
+            }
+
+            String dataHeader[] = header.split(" ");
+
+            String gpio;
+
+            if (dataHeader.length == 6 || dataHeader.length == 5) {
+                se = sejc.findSkyEventosByParametro(Short.parseShort(dataHeader[0]));
+                if (!registered) {
+                    e = ejc.findEquiposByEquipo(dataHeader[1]);
+                    if (e != null) {
+                        registered = true;
+                        v = vjc.findVehiculosByEquipo(e.getEquipo());
+                        if (v == null) {
+                            System.out.println("No hay vehiculo asociado al Equipo [" + e.getEquipo() + "]");
+                        }
+                    } else {
+                        auxDevice = dataHeader[1];
+                    }
+                }
+                gpio = u.convertNumberToHexadecimal(dataHeader[2]);
+//                p = pjc.findPuntosByGeocercaSkp(dataHeader[3]);
+//                if (dataHeader.length == 5) {
+//                    p = pjc.findPuntosByGeocercaSkp("FFFF");
+//                }
+            } else {
+                if (!registered) {
+                    e = ejc.findEquiposByEquipo(dataHeader[0]);
+                    if (e != null) {
+                        registered = true;
+                        v = vjc.findVehiculosByEquipo(e.getEquipo());
+                        
+                        if (v == null) {
+                            System.out.println("No hay vehiculo asociado al Equipo [" + e.getEquipo() + "]");
+                        }
+                    } else {
+                        auxDevice = dataHeader[0];
+                    }
+                }
+                System.out.println(dataHeader[1]);
+                gpio = u.convertNumberToHexadecimal(dataHeader[1]);
+//                se = sejc.findSkyEventosByEvento(Short.parseShort(dataHeader[2]));
+//                if (se == null) {
+//                    se = sejc.findSkyEventos(1);
+//                }
+//                p = pjc.findPuntosByGeocercaSkp("FFFF");
+            }
+
+            if (registered) {
+                double latitud = u.convertLatLonSkp(dataTrama[3], dataTrama[4]);
+                double longitud = u.convertLatLonSkp(dataTrama[5], dataTrama[6]);
+                double speed = Math.rint(Double.parseDouble(dataTrama[7]) * 1.85 * 100) / 100;
+                double course = Double.parseDouble(dataTrama[8]);
+
+                if (se.getIdSkyEvento() == 10 || se.getIdSkyEvento() == 11) {
+                    if (speed > 90) {
+                        se = sejc.findSkyEventos(21);
+                    }
+                    if (speed > 60) {
+                        se = sejc.findSkyEventos(12);
+                    }
+                }
+
+                try {
+                    dsjc.create(new DatoSpks(new DatoSpksPK(e.getIdEquipo(), objCalDevice.getTime(), objCalDevice.getTime(), se.getIdSkyEvento()), new Date(), latitud, longitud, speed, course,
+                            Short.parseShort("" + gpio.charAt(8)),
+                            Short.parseShort("" + gpio.charAt(7)),
+                            Short.parseShort("" + gpio.charAt(6)),
+                            Short.parseShort("" + gpio.charAt(5)),
+                            Short.parseShort("" + gpio.charAt(4)),
+                            Short.parseShort("" + gpio.charAt(3)),
+                            Short.parseShort("" + gpio.charAt(2)),
+                            Short.parseShort("" + gpio.charAt(1)),
+                            Short.parseShort("" + gpio.charAt(0)),
+                            0, ""));
+                    if (se.getIdSkyEvento() == 12 || se.getIdSkyEvento() == 21) {
+                        u.executeProcedureExcesoVelocidades(v.getIdVehiculo(), speed);
+                    }
+//                    if (p.getIdPunto() > 1) {
+//                        u.executeProcedurePapeletaDespachos(v.getIdVehiculo(), p.getIdPunto(), objCalDevice.getTime(), speed);
+//                    }
+//                    u.executeProcedureAsignarRutaSkp(v.getIdVehiculo(), objCalDevice.getTime());
+                    sendMails();
+                } catch (PreexistingEntityException ex) {
+                    System.out.println("Dato ya Existe [" + this.data + "]");
+                    dijc.create(new DatoInvalidos(5, new Date(), e.getEquipo(), this.data));
+                } catch (Exception ex) {
+                    System.out.println("Excepcion TCP [" + this.data + "] [" + ex.getMessage() + "]");
+                    dijc.create(new DatoInvalidos(2, new Date(), e.getEquipo(), this.data, ex.getMessage()));
+                }
+            } else {
+                dijc.create(new DatoInvalidos(3, new Date(), auxDevice, this.data));
+                System.out.println("No se encuentra registrado [" + this.data + "].");
+            }
+        } else {
+            dijc.create(new DatoInvalidos(4, new Date(), e.getEquipo(), this.data));
+            System.out.println("Poblemas de Fecha y Hora [" + this.data + "]");
+        }
+    }
+
 
     private void processResponseComand(String trama) {
         try {

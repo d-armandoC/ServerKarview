@@ -60,23 +60,23 @@ public class FrameFileConnection extends javax.swing.JFrame {
     
     public FrameFileConnection(boolean valid) {
         initComponents();
-//        FileInputStream fis = null;
-//        try {
-//            fis = new FileInputStream(Utilities.get() + "/config/connection.properties");
-//            ResourceBundle rb = new PropertyResourceBundle(fis);
-//            this.txtHostname.setText(rb.getString("hostname"));
-//            this.txtPort.setText(rb.getString("port"));
-//            this.txtDataBase.setText(rb.getString("database"));
-//            this.txtDataBaseHistoric.setText(rb.getString("databasehistoric"));
-//            this.txtUserName.setText(rb.getString("username"));
-//            this.txtPassword.setText(rb.getString("password"));
-//            this.txtAutStart.setText(rb.getString("autostart"));
-//            this.txtPath.setText(rb.getString("pathfiles"));
-//            this.txtCity.setText(rb.getString("city"));
-//            this.txtLimitConDb.setText(rb.getString("limitConDb"));
-//            this.tabSgbd.setEnabledAt(1, false);
-//        } catch (Exception e) {
-//        }
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(Utilities.get() + "/config/connection.properties");
+            ResourceBundle rb = new PropertyResourceBundle(fis);
+            this.txtHostname.setText(rb.getString("hostname"));
+            this.txtPort.setText(rb.getString("port"));
+            this.txtDataBase.setText(rb.getString("database"));
+            this.txtDataBaseHistoric.setText(rb.getString("databasehistoric"));
+            this.txtUserName.setText(rb.getString("username"));
+            this.txtPassword.setText(rb.getString("password"));
+            this.txtAutStart.setText(rb.getString("autostart"));
+            this.txtPath.setText(rb.getString("pathfiles"));
+            this.txtCity.setText(rb.getString("city"));
+            this.txtLimitConDb.setText(rb.getString("limitConDb"));
+            this.tabSgbd.setEnabledAt(1, false);
+        } catch (Exception e) {
+        }
     }
 
     /**

@@ -6,6 +6,8 @@
 
 package com.kradac.karview.entities.controllers;
 
+import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
+import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
@@ -17,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import com.kradac.karview.entities.logic.GeocercaVehiculos;
 import com.kradac.karview.entities.logic.Geocercas;
-import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
-import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;

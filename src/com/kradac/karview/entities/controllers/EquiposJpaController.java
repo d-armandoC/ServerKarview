@@ -6,6 +6,8 @@
 
 package com.kradac.karview.entities.controllers;
 
+import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
+import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import com.kradac.karview.entities.logic.Equipos;
 import java.io.Serializable;
 import javax.persistence.Query;
@@ -16,8 +18,6 @@ import com.kradac.karview.entities.logic.Vehiculos;
 import java.util.ArrayList;
 import java.util.Collection;
 import com.kradac.karview.entities.logic.UltimoDatoSkps;
-import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
-import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -219,20 +219,6 @@ public class EquiposJpaController implements Serializable {
     public List<Equipos> findEquiposEntities(int maxResults, int firstResult) {
         return findEquiposEntities(false, maxResults, firstResult);
     }
-    
-    public Equipos findEquiposByEquipo(String equipo) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Equipos> qry;
-            qry = em.createNamedQuery("Equipos.findByEquipo", Equipos.class);
-            qry.setParameter("equipo", equipo);
-            return qry.getSingleResult();
-        } catch (NoResultException e) {
-            return null;
-        } finally {
-            em.close();
-        }
-    }
 
     private List<Equipos> findEquiposEntities(boolean all, int maxResults, int firstResult) {
         EntityManager em = getEntityManager();
@@ -267,6 +253,20 @@ public class EquiposJpaController implements Serializable {
             cq.select(em.getCriteriaBuilder().count(rt));
             Query q = em.createQuery(cq);
             return ((Long) q.getSingleResult()).intValue();
+        } finally {
+            em.close();
+        }
+    }
+    
+        public Equipos findEquiposByEquipo(String equipo) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Equipos> qry;
+            qry = em.createNamedQuery("Equipos.findByEquipo", Equipos.class);
+            qry.setParameter("equipo", equipo);
+            return qry.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
         } finally {
             em.close();
         }

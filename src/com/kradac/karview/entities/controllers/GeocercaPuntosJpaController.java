@@ -6,6 +6,8 @@
 
 package com.kradac.karview.entities.controllers;
 
+import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
+import com.kradac.karview.entities.controllers.exceptions.PreexistingEntityException;
 import com.kradac.karview.entities.logic.GeocercaPuntos;
 import com.kradac.karview.entities.logic.GeocercaPuntosPK;
 import java.io.Serializable;
@@ -14,8 +16,6 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.kradac.karview.entities.logic.Geocercas;
-import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
-import com.kradac.karview.entities.controllers.exceptions.PreexistingEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;

@@ -6,6 +6,7 @@
 
 package com.kradac.karview.entities.controllers;
 
+import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
@@ -14,7 +15,6 @@ import javax.persistence.criteria.Root;
 import com.kradac.karview.entities.logic.Equipos;
 import com.kradac.karview.entities.logic.SkyEventos;
 import com.kradac.karview.entities.logic.UltimoDatoSkps;
-import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -197,7 +197,7 @@ public class UltimoDatoSkpsJpaController implements Serializable {
         }
     }
     
-      public UltimoDatoSkps findUltimoDatoSkpsByIdEquipo(Integer id) {
+        public UltimoDatoSkps findUltimoDatoSkpsByIdEquipo(Integer id) {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<UltimoDatoSkps> qry;
@@ -210,5 +210,4 @@ public class UltimoDatoSkpsJpaController implements Serializable {
             em.close();
         }
     }
-    
 }

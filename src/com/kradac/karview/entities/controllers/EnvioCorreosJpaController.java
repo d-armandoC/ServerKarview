@@ -6,18 +6,21 @@
 
 package com.kradac.karview.entities.controllers;
 
-import com.kradac.karview.entities.logic.EnvioCorreos;
-import com.kradac.karview.entities.logic.EnvioCorreosPK;
 import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import com.kradac.karview.entities.controllers.exceptions.PreexistingEntityException;
 import java.io.Serializable;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import com.kradac.karview.entities.logic.Empresas;
+import com.kradac.karview.entities.logic.EnvioCorreos;
+import com.kradac.karview.entities.logic.EnvioCorreosPK;
+import com.kradac.karview.entities.logic.SkyEventos;
+import com.kradac.karview.entities.logic.Personas;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -38,11 +41,41 @@ public class EnvioCorreosJpaController implements Serializable {
         if (envioCorreos.getEnvioCorreosPK() == null) {
             envioCorreos.setEnvioCorreosPK(new EnvioCorreosPK());
         }
+        envioCorreos.getEnvioCorreosPK().setIdPersona(envioCorreos.getPersonas().getIdPersona());
+        envioCorreos.getEnvioCorreosPK().setIdSkyEvento(envioCorreos.getSkyEventos().getIdSkyEvento());
+        envioCorreos.getEnvioCorreosPK().setIdEmpresa(envioCorreos.getEmpresas().getIdEmpresa());
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            Empresas empresas = envioCorreos.getEmpresas();
+            if (empresas != null) {
+                empresas = em.getReference(empresas.getClass(), empresas.getIdEmpresa());
+                envioCorreos.setEmpresas(empresas);
+            }
+            SkyEventos skyEventos = envioCorreos.getSkyEventos();
+            if (skyEventos != null) {
+                skyEventos = em.getReference(skyEventos.getClass(), skyEventos.getIdSkyEvento());
+                envioCorreos.setSkyEventos(skyEventos);
+            }
+            Personas personas = envioCorreos.getPersonas();
+            if (personas != null) {
+                personas = em.getReference(personas.getClass(), personas.getIdPersona());
+                envioCorreos.setPersonas(personas);
+            }
             em.persist(envioCorreos);
+            if (empresas != null) {
+                empresas.getEnvioCorreosCollection().add(envioCorreos);
+                empresas = em.merge(empresas);
+            }
+            if (skyEventos != null) {
+                skyEventos.getEnvioCorreosCollection().add(envioCorreos);
+                skyEventos = em.merge(skyEventos);
+            }
+            if (personas != null) {
+                personas.getEnvioCorreosCollection().add(envioCorreos);
+                personas = em.merge(personas);
+            }
             em.getTransaction().commit();
         } catch (Exception ex) {
             if (findEnvioCorreos(envioCorreos.getEnvioCorreosPK()) != null) {
@@ -57,11 +90,57 @@ public class EnvioCorreosJpaController implements Serializable {
     }
 
     public void edit(EnvioCorreos envioCorreos) throws NonexistentEntityException, Exception {
+        envioCorreos.getEnvioCorreosPK().setIdPersona(envioCorreos.getPersonas().getIdPersona());
+        envioCorreos.getEnvioCorreosPK().setIdSkyEvento(envioCorreos.getSkyEventos().getIdSkyEvento());
+        envioCorreos.getEnvioCorreosPK().setIdEmpresa(envioCorreos.getEmpresas().getIdEmpresa());
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            EnvioCorreos persistentEnvioCorreos = em.find(EnvioCorreos.class, envioCorreos.getEnvioCorreosPK());
+            Empresas empresasOld = persistentEnvioCorreos.getEmpresas();
+            Empresas empresasNew = envioCorreos.getEmpresas();
+            SkyEventos skyEventosOld = persistentEnvioCorreos.getSkyEventos();
+            SkyEventos skyEventosNew = envioCorreos.getSkyEventos();
+            Personas personasOld = persistentEnvioCorreos.getPersonas();
+            Personas personasNew = envioCorreos.getPersonas();
+            if (empresasNew != null) {
+                empresasNew = em.getReference(empresasNew.getClass(), empresasNew.getIdEmpresa());
+                envioCorreos.setEmpresas(empresasNew);
+            }
+            if (skyEventosNew != null) {
+                skyEventosNew = em.getReference(skyEventosNew.getClass(), skyEventosNew.getIdSkyEvento());
+                envioCorreos.setSkyEventos(skyEventosNew);
+            }
+            if (personasNew != null) {
+                personasNew = em.getReference(personasNew.getClass(), personasNew.getIdPersona());
+                envioCorreos.setPersonas(personasNew);
+            }
             envioCorreos = em.merge(envioCorreos);
+            if (empresasOld != null && !empresasOld.equals(empresasNew)) {
+                empresasOld.getEnvioCorreosCollection().remove(envioCorreos);
+                empresasOld = em.merge(empresasOld);
+            }
+            if (empresasNew != null && !empresasNew.equals(empresasOld)) {
+                empresasNew.getEnvioCorreosCollection().add(envioCorreos);
+                empresasNew = em.merge(empresasNew);
+            }
+            if (skyEventosOld != null && !skyEventosOld.equals(skyEventosNew)) {
+                skyEventosOld.getEnvioCorreosCollection().remove(envioCorreos);
+                skyEventosOld = em.merge(skyEventosOld);
+            }
+            if (skyEventosNew != null && !skyEventosNew.equals(skyEventosOld)) {
+                skyEventosNew.getEnvioCorreosCollection().add(envioCorreos);
+                skyEventosNew = em.merge(skyEventosNew);
+            }
+            if (personasOld != null && !personasOld.equals(personasNew)) {
+                personasOld.getEnvioCorreosCollection().remove(envioCorreos);
+                personasOld = em.merge(personasOld);
+            }
+            if (personasNew != null && !personasNew.equals(personasOld)) {
+                personasNew.getEnvioCorreosCollection().add(envioCorreos);
+                personasNew = em.merge(personasNew);
+            }
             em.getTransaction().commit();
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
@@ -90,6 +169,21 @@ public class EnvioCorreosJpaController implements Serializable {
                 envioCorreos.getEnvioCorreosPK();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The envioCorreos with id " + id + " no longer exists.", enfe);
+            }
+            Empresas empresas = envioCorreos.getEmpresas();
+            if (empresas != null) {
+                empresas.getEnvioCorreosCollection().remove(envioCorreos);
+                empresas = em.merge(empresas);
+            }
+            SkyEventos skyEventos = envioCorreos.getSkyEventos();
+            if (skyEventos != null) {
+                skyEventos.getEnvioCorreosCollection().remove(envioCorreos);
+                skyEventos = em.merge(skyEventos);
+            }
+            Personas personas = envioCorreos.getPersonas();
+            if (personas != null) {
+                personas.getEnvioCorreosCollection().remove(envioCorreos);
+                personas = em.merge(personas);
             }
             em.remove(envioCorreos);
             em.getTransaction().commit();

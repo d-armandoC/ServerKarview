@@ -6,17 +6,17 @@
 
 package com.kradac.karview.entities.controllers;
 
+import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.kradac.karview.entities.logic.ClaseVehiculos;
+import com.kradac.karview.entities.logic.Empresas;
 import com.kradac.karview.entities.logic.Equipos;
 import com.kradac.karview.entities.logic.Personas;
-import com.kradac.karview.entities.logic.Empresas;
 import com.kradac.karview.entities.logic.Vehiculos;
-import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -48,6 +48,11 @@ public class VehiculosJpaController implements Serializable {
                 idClaseVehiculo = em.getReference(idClaseVehiculo.getClass(), idClaseVehiculo.getIdClaseVehiculo());
                 vehiculos.setIdClaseVehiculo(idClaseVehiculo);
             }
+            Empresas idEmpresa = vehiculos.getIdEmpresa();
+            if (idEmpresa != null) {
+                idEmpresa = em.getReference(idEmpresa.getClass(), idEmpresa.getIdEmpresa());
+                vehiculos.setIdEmpresa(idEmpresa);
+            }
             Equipos idEquipo = vehiculos.getIdEquipo();
             if (idEquipo != null) {
                 idEquipo = em.getReference(idEquipo.getClass(), idEquipo.getIdEquipo());
@@ -58,15 +63,14 @@ public class VehiculosJpaController implements Serializable {
                 idPersona = em.getReference(idPersona.getClass(), idPersona.getIdPersona());
                 vehiculos.setIdPersona(idPersona);
             }
-            Empresas idEmpresa = vehiculos.getIdEmpresa();
-            if (idEmpresa != null) {
-                idEmpresa = em.getReference(idEmpresa.getClass(), idEmpresa.getIdEmpresa());
-                vehiculos.setIdEmpresa(idEmpresa);
-            }
             em.persist(vehiculos);
             if (idClaseVehiculo != null) {
                 idClaseVehiculo.getVehiculosCollection().add(vehiculos);
                 idClaseVehiculo = em.merge(idClaseVehiculo);
+            }
+            if (idEmpresa != null) {
+                idEmpresa.getVehiculosCollection().add(vehiculos);
+                idEmpresa = em.merge(idEmpresa);
             }
             if (idEquipo != null) {
                 idEquipo.getVehiculosCollection().add(vehiculos);
@@ -75,10 +79,6 @@ public class VehiculosJpaController implements Serializable {
             if (idPersona != null) {
                 idPersona.getVehiculosCollection().add(vehiculos);
                 idPersona = em.merge(idPersona);
-            }
-            if (idEmpresa != null) {
-                idEmpresa.getVehiculosCollection().add(vehiculos);
-                idEmpresa = em.merge(idEmpresa);
             }
             em.getTransaction().commit();
         } finally {
@@ -96,15 +96,19 @@ public class VehiculosJpaController implements Serializable {
             Vehiculos persistentVehiculos = em.find(Vehiculos.class, vehiculos.getIdVehiculo());
             ClaseVehiculos idClaseVehiculoOld = persistentVehiculos.getIdClaseVehiculo();
             ClaseVehiculos idClaseVehiculoNew = vehiculos.getIdClaseVehiculo();
+            Empresas idEmpresaOld = persistentVehiculos.getIdEmpresa();
+            Empresas idEmpresaNew = vehiculos.getIdEmpresa();
             Equipos idEquipoOld = persistentVehiculos.getIdEquipo();
             Equipos idEquipoNew = vehiculos.getIdEquipo();
             Personas idPersonaOld = persistentVehiculos.getIdPersona();
             Personas idPersonaNew = vehiculos.getIdPersona();
-            Empresas idEmpresaOld = persistentVehiculos.getIdEmpresa();
-            Empresas idEmpresaNew = vehiculos.getIdEmpresa();
             if (idClaseVehiculoNew != null) {
                 idClaseVehiculoNew = em.getReference(idClaseVehiculoNew.getClass(), idClaseVehiculoNew.getIdClaseVehiculo());
                 vehiculos.setIdClaseVehiculo(idClaseVehiculoNew);
+            }
+            if (idEmpresaNew != null) {
+                idEmpresaNew = em.getReference(idEmpresaNew.getClass(), idEmpresaNew.getIdEmpresa());
+                vehiculos.setIdEmpresa(idEmpresaNew);
             }
             if (idEquipoNew != null) {
                 idEquipoNew = em.getReference(idEquipoNew.getClass(), idEquipoNew.getIdEquipo());
@@ -114,10 +118,6 @@ public class VehiculosJpaController implements Serializable {
                 idPersonaNew = em.getReference(idPersonaNew.getClass(), idPersonaNew.getIdPersona());
                 vehiculos.setIdPersona(idPersonaNew);
             }
-            if (idEmpresaNew != null) {
-                idEmpresaNew = em.getReference(idEmpresaNew.getClass(), idEmpresaNew.getIdEmpresa());
-                vehiculos.setIdEmpresa(idEmpresaNew);
-            }
             vehiculos = em.merge(vehiculos);
             if (idClaseVehiculoOld != null && !idClaseVehiculoOld.equals(idClaseVehiculoNew)) {
                 idClaseVehiculoOld.getVehiculosCollection().remove(vehiculos);
@@ -126,6 +126,14 @@ public class VehiculosJpaController implements Serializable {
             if (idClaseVehiculoNew != null && !idClaseVehiculoNew.equals(idClaseVehiculoOld)) {
                 idClaseVehiculoNew.getVehiculosCollection().add(vehiculos);
                 idClaseVehiculoNew = em.merge(idClaseVehiculoNew);
+            }
+            if (idEmpresaOld != null && !idEmpresaOld.equals(idEmpresaNew)) {
+                idEmpresaOld.getVehiculosCollection().remove(vehiculos);
+                idEmpresaOld = em.merge(idEmpresaOld);
+            }
+            if (idEmpresaNew != null && !idEmpresaNew.equals(idEmpresaOld)) {
+                idEmpresaNew.getVehiculosCollection().add(vehiculos);
+                idEmpresaNew = em.merge(idEmpresaNew);
             }
             if (idEquipoOld != null && !idEquipoOld.equals(idEquipoNew)) {
                 idEquipoOld.getVehiculosCollection().remove(vehiculos);
@@ -142,14 +150,6 @@ public class VehiculosJpaController implements Serializable {
             if (idPersonaNew != null && !idPersonaNew.equals(idPersonaOld)) {
                 idPersonaNew.getVehiculosCollection().add(vehiculos);
                 idPersonaNew = em.merge(idPersonaNew);
-            }
-            if (idEmpresaOld != null && !idEmpresaOld.equals(idEmpresaNew)) {
-                idEmpresaOld.getVehiculosCollection().remove(vehiculos);
-                idEmpresaOld = em.merge(idEmpresaOld);
-            }
-            if (idEmpresaNew != null && !idEmpresaNew.equals(idEmpresaOld)) {
-                idEmpresaNew.getVehiculosCollection().add(vehiculos);
-                idEmpresaNew = em.merge(idEmpresaNew);
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -185,6 +185,11 @@ public class VehiculosJpaController implements Serializable {
                 idClaseVehiculo.getVehiculosCollection().remove(vehiculos);
                 idClaseVehiculo = em.merge(idClaseVehiculo);
             }
+            Empresas idEmpresa = vehiculos.getIdEmpresa();
+            if (idEmpresa != null) {
+                idEmpresa.getVehiculosCollection().remove(vehiculos);
+                idEmpresa = em.merge(idEmpresa);
+            }
             Equipos idEquipo = vehiculos.getIdEquipo();
             if (idEquipo != null) {
                 idEquipo.getVehiculosCollection().remove(vehiculos);
@@ -194,11 +199,6 @@ public class VehiculosJpaController implements Serializable {
             if (idPersona != null) {
                 idPersona.getVehiculosCollection().remove(vehiculos);
                 idPersona = em.merge(idPersona);
-            }
-            Empresas idEmpresa = vehiculos.getIdEmpresa();
-            if (idEmpresa != null) {
-                idEmpresa.getVehiculosCollection().remove(vehiculos);
-                idEmpresa = em.merge(idEmpresa);
             }
             em.remove(vehiculos);
             em.getTransaction().commit();
@@ -255,8 +255,7 @@ public class VehiculosJpaController implements Serializable {
         }
     }
     
-     public Vehiculos findVehiculosByEquipo(String equipo) {
-         System.out.println("consulta"+ equipo);
+      public Vehiculos findVehiculosByEquipo(String equipo) {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Vehiculos> qry;

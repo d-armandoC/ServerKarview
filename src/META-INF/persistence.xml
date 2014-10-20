@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-  <persistence-unit name="ServerKarviewPU" transaction-type="RESOURCE_LOCAL">
+  <persistence-unit name="ServerKarviewPU1" transaction-type="RESOURCE_LOCAL">
     <provider>org.hibernate.ejb.HibernatePersistence</provider>
-    <class>com.kradac.karview.entities.Configuraciones</class>
-    <class>com.kradac.karview.entities.Vehiculos</class>
-    <class>com.kradac.karview.entities.TipoEquipos</class>
-    <class>com.kradac.karview.entities.Empresas</class>
-    <class>com.kradac.karview.entities.UltimoDatoSkps</class>
-    <class>com.kradac.karview.entities.GeocercaVehiculos</class>
-    <class>com.kradac.karview.entities.Geocercas</class>
-    <class>com.kradac.karview.entities.TipoEstadoCmds</class>
-    <class>com.kradac.karview.entities.EnvioGeoCorreos</class>
-    <class>com.kradac.karview.entities.HistorialGeocercas</class>
-    <class>com.kradac.karview.entities.CmdPredefinidos</class>
-    <class>com.kradac.karview.entities.TipoDatoInvalidos</class>
-    <class>com.kradac.karview.entities.Equipos</class>
-    <class>com.kradac.karview.entities.Mantenimiento</class>
-    <class>com.kradac.karview.entities.SkyEventos</class>
-    <class>com.kradac.karview.entities.EnvioCorreos</class>
-    <class>com.kradac.karview.entities.Usuarios</class>
-    <class>com.kradac.karview.entities.Generos</class>
-    <class>com.kradac.karview.entities.EstandarVehiculos</class>
-    <class>com.kradac.karview.entities.GeocercaPuntos</class>
-    <class>com.kradac.karview.entities.ClaseVehiculos</class>
-    <class>com.kradac.karview.entities.RolUsuarios</class>
-    <class>com.kradac.karview.entities.Personas</class>
+    <class>com.kradac.karview.entities.logic.ClaseVehiculos</class>
+    <class>com.kradac.karview.entities.logic.CmdPredefinidos</class>
+    <class>com.kradac.karview.entities.logic.Configuraciones</class>
+    <class>com.kradac.karview.entities.logic.Empresas</class>
+    <class>com.kradac.karview.entities.logic.EnvioCorreos</class>
+    <class>com.kradac.karview.entities.logic.EnvioGeoCorreos</class>
+    <class>com.kradac.karview.entities.logic.Equipos</class>
+    <class>com.kradac.karview.entities.logic.EstandarVehiculos</class>
+    <class>com.kradac.karview.entities.logic.Generos</class>
+    <class>com.kradac.karview.entities.logic.GeocercaPuntos</class>
+    <class>com.kradac.karview.entities.logic.GeocercaVehiculos</class>
+    <class>com.kradac.karview.entities.logic.Geocercas</class>
+    <class>com.kradac.karview.entities.logic.Mantenimiento</class>
+    <class>com.kradac.karview.entities.logic.Personas</class>
+    <class>com.kradac.karview.entities.logic.RolUsuarios</class>
+    <class>com.kradac.karview.entities.logic.SkyEventos</class>
+    <class>com.kradac.karview.entities.logic.TipoDatoInvalidos</class>
+    <class>com.kradac.karview.entities.logic.TipoEquipos</class>
+    <class>com.kradac.karview.entities.logic.TipoEstadoCmds</class>
+    <class>com.kradac.karview.entities.logic.UltimoDatoSkps</class>
+    <class>com.kradac.karview.entities.logic.Usuarios</class>
+    <class>com.kradac.karview.entities.logic.Vehiculos</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/Karviewdb?zeroDateTimeBehavior=convertToNull"/>
       <property name="javax.persistence.jdbc.user" value="root"/>
@@ -35,12 +34,28 @@
   </persistence-unit>
   <persistence-unit name="ServerKarviewPU2" transaction-type="RESOURCE_LOCAL">
     <provider>org.hibernate.ejb.HibernatePersistence</provider>
-    <class>com.kradac.karview.entities.historic.Accesos</class>
-    <class>com.kradac.karview.entities.historic.Comandos</class>
-    <class>com.kradac.karview.entities.historic.ComentarioEquipos</class>
-    <class>com.kradac.karview.entities.historic.ComentarioVehiculos</class>
-    <class>com.kradac.karview.entities.historic.DatoInvalidos</class>
-    <class>com.kradac.karview.entities.historic.DatoSpks</class>
+    <class>com.kradac.karview.entities.logic.ClaseVehiculos</class>
+    <class>com.kradac.karview.entities.logic.CmdPredefinidos</class>
+    <class>com.kradac.karview.entities.logic.Configuraciones</class>
+    <class>com.kradac.karview.entities.logic.Empresas</class>
+    <class>com.kradac.karview.entities.logic.EnvioCorreos</class>
+    <class>com.kradac.karview.entities.logic.EnvioGeoCorreos</class>
+    <class>com.kradac.karview.entities.logic.Equipos</class>
+    <class>com.kradac.karview.entities.logic.EstandarVehiculos</class>
+    <class>com.kradac.karview.entities.logic.Generos</class>
+    <class>com.kradac.karview.entities.logic.GeocercaPuntos</class>
+    <class>com.kradac.karview.entities.logic.GeocercaVehiculos</class>
+    <class>com.kradac.karview.entities.logic.Geocercas</class>
+    <class>com.kradac.karview.entities.logic.Mantenimiento</class>
+    <class>com.kradac.karview.entities.logic.Personas</class>
+    <class>com.kradac.karview.entities.logic.RolUsuarios</class>
+    <class>com.kradac.karview.entities.logic.SkyEventos</class>
+    <class>com.kradac.karview.entities.logic.TipoDatoInvalidos</class>
+    <class>com.kradac.karview.entities.logic.TipoEquipos</class>
+    <class>com.kradac.karview.entities.logic.TipoEstadoCmds</class>
+    <class>com.kradac.karview.entities.logic.UltimoDatoSkps</class>
+    <class>com.kradac.karview.entities.logic.Usuarios</class>
+    <class>com.kradac.karview.entities.logic.Vehiculos</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/karviewhistoricodb?zeroDateTimeBehavior=convertToNull"/>
       <property name="javax.persistence.jdbc.user" value="root"/>

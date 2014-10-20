@@ -6,10 +6,10 @@
 
 package com.kradac.karview.entities.controllers;
 
-import com.kradac.karview.entities.historic.HistorialGeocercas;
-import com.kradac.karview.entities.historic.HistorialGeocercasPK;
 import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import com.kradac.karview.entities.controllers.exceptions.PreexistingEntityException;
+import com.kradac.karview.entities.historic.HistorialGeocercas;
+import com.kradac.karview.entities.historic.HistorialGeocercasPK;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.EntityManager;

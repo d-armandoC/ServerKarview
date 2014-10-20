@@ -6,6 +6,8 @@
 
 package com.kradac.karview.entities.controllers;
 
+import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
+import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import com.kradac.karview.entities.logic.Generos;
 import java.io.Serializable;
 import javax.persistence.Query;
@@ -13,8 +15,6 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.kradac.karview.entities.logic.Personas;
-import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
-import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

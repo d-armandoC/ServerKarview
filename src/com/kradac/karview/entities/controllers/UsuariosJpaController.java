@@ -6,16 +6,16 @@
 
 package com.kradac.karview.entities.controllers;
 
+import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.kradac.karview.entities.logic.RolUsuarios;
-import com.kradac.karview.entities.logic.Personas;
 import com.kradac.karview.entities.logic.Empresas;
+import com.kradac.karview.entities.logic.Personas;
+import com.kradac.karview.entities.logic.RolUsuarios;
 import com.kradac.karview.entities.logic.Usuarios;
-import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -40,33 +40,33 @@ public class UsuariosJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            RolUsuarios idRolUsuario = usuarios.getIdRolUsuario();
-            if (idRolUsuario != null) {
-                idRolUsuario = em.getReference(idRolUsuario.getClass(), idRolUsuario.getIdRolUsuario());
-                usuarios.setIdRolUsuario(idRolUsuario);
+            Empresas idEmpresa = usuarios.getIdEmpresa();
+            if (idEmpresa != null) {
+                idEmpresa = em.getReference(idEmpresa.getClass(), idEmpresa.getIdEmpresa());
+                usuarios.setIdEmpresa(idEmpresa);
             }
             Personas idPersona = usuarios.getIdPersona();
             if (idPersona != null) {
                 idPersona = em.getReference(idPersona.getClass(), idPersona.getIdPersona());
                 usuarios.setIdPersona(idPersona);
             }
-            Empresas idEmpresa = usuarios.getIdEmpresa();
-            if (idEmpresa != null) {
-                idEmpresa = em.getReference(idEmpresa.getClass(), idEmpresa.getIdEmpresa());
-                usuarios.setIdEmpresa(idEmpresa);
+            RolUsuarios idRolUsuario = usuarios.getIdRolUsuario();
+            if (idRolUsuario != null) {
+                idRolUsuario = em.getReference(idRolUsuario.getClass(), idRolUsuario.getIdRolUsuario());
+                usuarios.setIdRolUsuario(idRolUsuario);
             }
             em.persist(usuarios);
-            if (idRolUsuario != null) {
-                idRolUsuario.getUsuariosCollection().add(usuarios);
-                idRolUsuario = em.merge(idRolUsuario);
+            if (idEmpresa != null) {
+                idEmpresa.getUsuariosCollection().add(usuarios);
+                idEmpresa = em.merge(idEmpresa);
             }
             if (idPersona != null) {
                 idPersona.getUsuariosCollection().add(usuarios);
                 idPersona = em.merge(idPersona);
             }
-            if (idEmpresa != null) {
-                idEmpresa.getUsuariosCollection().add(usuarios);
-                idEmpresa = em.merge(idEmpresa);
+            if (idRolUsuario != null) {
+                idRolUsuario.getUsuariosCollection().add(usuarios);
+                idRolUsuario = em.merge(idRolUsuario);
             }
             em.getTransaction().commit();
         } finally {
@@ -82,32 +82,32 @@ public class UsuariosJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             Usuarios persistentUsuarios = em.find(Usuarios.class, usuarios.getIdUsuario());
-            RolUsuarios idRolUsuarioOld = persistentUsuarios.getIdRolUsuario();
-            RolUsuarios idRolUsuarioNew = usuarios.getIdRolUsuario();
-            Personas idPersonaOld = persistentUsuarios.getIdPersona();
-            Personas idPersonaNew = usuarios.getIdPersona();
             Empresas idEmpresaOld = persistentUsuarios.getIdEmpresa();
             Empresas idEmpresaNew = usuarios.getIdEmpresa();
-            if (idRolUsuarioNew != null) {
-                idRolUsuarioNew = em.getReference(idRolUsuarioNew.getClass(), idRolUsuarioNew.getIdRolUsuario());
-                usuarios.setIdRolUsuario(idRolUsuarioNew);
+            Personas idPersonaOld = persistentUsuarios.getIdPersona();
+            Personas idPersonaNew = usuarios.getIdPersona();
+            RolUsuarios idRolUsuarioOld = persistentUsuarios.getIdRolUsuario();
+            RolUsuarios idRolUsuarioNew = usuarios.getIdRolUsuario();
+            if (idEmpresaNew != null) {
+                idEmpresaNew = em.getReference(idEmpresaNew.getClass(), idEmpresaNew.getIdEmpresa());
+                usuarios.setIdEmpresa(idEmpresaNew);
             }
             if (idPersonaNew != null) {
                 idPersonaNew = em.getReference(idPersonaNew.getClass(), idPersonaNew.getIdPersona());
                 usuarios.setIdPersona(idPersonaNew);
             }
-            if (idEmpresaNew != null) {
-                idEmpresaNew = em.getReference(idEmpresaNew.getClass(), idEmpresaNew.getIdEmpresa());
-                usuarios.setIdEmpresa(idEmpresaNew);
+            if (idRolUsuarioNew != null) {
+                idRolUsuarioNew = em.getReference(idRolUsuarioNew.getClass(), idRolUsuarioNew.getIdRolUsuario());
+                usuarios.setIdRolUsuario(idRolUsuarioNew);
             }
             usuarios = em.merge(usuarios);
-            if (idRolUsuarioOld != null && !idRolUsuarioOld.equals(idRolUsuarioNew)) {
-                idRolUsuarioOld.getUsuariosCollection().remove(usuarios);
-                idRolUsuarioOld = em.merge(idRolUsuarioOld);
+            if (idEmpresaOld != null && !idEmpresaOld.equals(idEmpresaNew)) {
+                idEmpresaOld.getUsuariosCollection().remove(usuarios);
+                idEmpresaOld = em.merge(idEmpresaOld);
             }
-            if (idRolUsuarioNew != null && !idRolUsuarioNew.equals(idRolUsuarioOld)) {
-                idRolUsuarioNew.getUsuariosCollection().add(usuarios);
-                idRolUsuarioNew = em.merge(idRolUsuarioNew);
+            if (idEmpresaNew != null && !idEmpresaNew.equals(idEmpresaOld)) {
+                idEmpresaNew.getUsuariosCollection().add(usuarios);
+                idEmpresaNew = em.merge(idEmpresaNew);
             }
             if (idPersonaOld != null && !idPersonaOld.equals(idPersonaNew)) {
                 idPersonaOld.getUsuariosCollection().remove(usuarios);
@@ -117,13 +117,13 @@ public class UsuariosJpaController implements Serializable {
                 idPersonaNew.getUsuariosCollection().add(usuarios);
                 idPersonaNew = em.merge(idPersonaNew);
             }
-            if (idEmpresaOld != null && !idEmpresaOld.equals(idEmpresaNew)) {
-                idEmpresaOld.getUsuariosCollection().remove(usuarios);
-                idEmpresaOld = em.merge(idEmpresaOld);
+            if (idRolUsuarioOld != null && !idRolUsuarioOld.equals(idRolUsuarioNew)) {
+                idRolUsuarioOld.getUsuariosCollection().remove(usuarios);
+                idRolUsuarioOld = em.merge(idRolUsuarioOld);
             }
-            if (idEmpresaNew != null && !idEmpresaNew.equals(idEmpresaOld)) {
-                idEmpresaNew.getUsuariosCollection().add(usuarios);
-                idEmpresaNew = em.merge(idEmpresaNew);
+            if (idRolUsuarioNew != null && !idRolUsuarioNew.equals(idRolUsuarioOld)) {
+                idRolUsuarioNew.getUsuariosCollection().add(usuarios);
+                idRolUsuarioNew = em.merge(idRolUsuarioNew);
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -154,20 +154,20 @@ public class UsuariosJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The usuarios with id " + id + " no longer exists.", enfe);
             }
-            RolUsuarios idRolUsuario = usuarios.getIdRolUsuario();
-            if (idRolUsuario != null) {
-                idRolUsuario.getUsuariosCollection().remove(usuarios);
-                idRolUsuario = em.merge(idRolUsuario);
+            Empresas idEmpresa = usuarios.getIdEmpresa();
+            if (idEmpresa != null) {
+                idEmpresa.getUsuariosCollection().remove(usuarios);
+                idEmpresa = em.merge(idEmpresa);
             }
             Personas idPersona = usuarios.getIdPersona();
             if (idPersona != null) {
                 idPersona.getUsuariosCollection().remove(usuarios);
                 idPersona = em.merge(idPersona);
             }
-            Empresas idEmpresa = usuarios.getIdEmpresa();
-            if (idEmpresa != null) {
-                idEmpresa.getUsuariosCollection().remove(usuarios);
-                idEmpresa = em.merge(idEmpresa);
+            RolUsuarios idRolUsuario = usuarios.getIdRolUsuario();
+            if (idRolUsuario != null) {
+                idRolUsuario.getUsuariosCollection().remove(usuarios);
+                idRolUsuario = em.merge(idRolUsuario);
             }
             em.remove(usuarios);
             em.getTransaction().commit();

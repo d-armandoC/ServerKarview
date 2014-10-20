@@ -198,10 +198,8 @@ public class Utilities {
      * @return
      */
     public double convertLatLonSkp(String latLon, String cuad) {
-
         Double finalRta;
         String enteros = latLon.substring(0, latLon.lastIndexOf("."));
-
         double segundos = Double.parseDouble(latLon) - Integer.parseInt(enteros);
         int minutos = Integer.valueOf(enteros.substring(enteros.length() - 2, enteros.length()));
         int horas = Integer.valueOf(enteros.substring(0, enteros.length() - 2));

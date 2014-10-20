@@ -9,12 +9,11 @@ package com.kradac.karview.entities.controllers;
 import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import com.kradac.karview.entities.historic.DatoInvalidos;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityNotFoundException;
 import javax.persistence.Query;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
@@ -34,12 +33,10 @@ public class DatoInvalidosJpaController implements Serializable {
     }
 
     public void create(DatoInvalidos datoInvalidos) {
-       
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            //em.persist(new DatoInvalidos(3, new Date(),"PT45","asa","as"));
             em.persist(datoInvalidos);
             em.getTransaction().commit();
         } finally {

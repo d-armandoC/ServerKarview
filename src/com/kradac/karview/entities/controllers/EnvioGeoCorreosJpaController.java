@@ -6,10 +6,10 @@
 
 package com.kradac.karview.entities.controllers;
 
-import com.kradac.karview.entities.logic.EnvioGeoCorreos;
-import com.kradac.karview.entities.logic.EnvioGeoCorreosPK;
 import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import com.kradac.karview.entities.controllers.exceptions.PreexistingEntityException;
+import com.kradac.karview.entities.logic.EnvioGeoCorreos;
+import com.kradac.karview.entities.logic.EnvioGeoCorreosPK;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.EntityManager;

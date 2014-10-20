@@ -6,8 +6,8 @@
 
 package com.kradac.karview.entities.controllers;
 
-import com.kradac.karview.entities.logic.Configuraciones;
 import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
+import com.kradac.karview.entities.logic.Configuraciones;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -125,23 +125,6 @@ public class ConfiguracionesJpaController implements Serializable {
             em.close();
         }
     }
-    
-    
-       public Configuraciones findConfiguracionesByNombre(String nombre) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Configuraciones> qry;
-            qry = em.createNamedQuery("Configuraciones.findByNombre", Configuraciones.class);
-            qry.setParameter("nombre", nombre);
-            return qry.getSingleResult();
-        } catch (NoResultException e) {
-            JOptionPane.showMessageDialog(null, "Problemas con el nombre [" + nombre + "] de Datos de Configuración.");
-            System.exit(0);
-            return null;
-        } finally {
-            em.close();
-        }
-    }
 
     public int getConfiguracionesCount() {
         EntityManager em = getEntityManager();
@@ -156,7 +139,20 @@ public class ConfiguracionesJpaController implements Serializable {
         }
     }
     
-    
-    
+      public Configuraciones findConfiguracionesByNombre(String nombre) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Configuraciones> qry;
+            qry = em.createNamedQuery("Configuraciones.findByNombre", Configuraciones.class);
+            qry.setParameter("nombre", nombre);
+            return qry.getSingleResult();
+        } catch (NoResultException e) {
+            JOptionPane.showMessageDialog(null, "Problemas con el nombre [" + nombre + "] de Datos de Configuración.");
+            System.exit(0);
+            return null;
+        } finally {
+            em.close();
+        }
+    }
     
 }

@@ -6,20 +6,21 @@
 
 package com.kradac.karview.entities.controllers;
 
+import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
+import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import com.kradac.karview.entities.logic.Empresas;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.kradac.karview.entities.logic.Usuarios;
+import com.kradac.karview.entities.logic.EnvioCorreos;
 import java.util.ArrayList;
 import java.util.Collection;
+import com.kradac.karview.entities.logic.Usuarios;
 import com.kradac.karview.entities.logic.Personas;
 import com.kradac.karview.entities.logic.Vehiculos;
 import com.kradac.karview.entities.logic.Geocercas;
-import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
-import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -40,6 +41,9 @@ public class EmpresasJpaController implements Serializable {
     }
 
     public void create(Empresas empresas) {
+        if (empresas.getEnvioCorreosCollection() == null) {
+            empresas.setEnvioCorreosCollection(new ArrayList<EnvioCorreos>());
+        }
         if (empresas.getUsuariosCollection() == null) {
             empresas.setUsuariosCollection(new ArrayList<Usuarios>());
         }
@@ -56,6 +60,12 @@ public class EmpresasJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            Collection<EnvioCorreos> attachedEnvioCorreosCollection = new ArrayList<EnvioCorreos>();
+            for (EnvioCorreos envioCorreosCollectionEnvioCorreosToAttach : empresas.getEnvioCorreosCollection()) {
+                envioCorreosCollectionEnvioCorreosToAttach = em.getReference(envioCorreosCollectionEnvioCorreosToAttach.getClass(), envioCorreosCollectionEnvioCorreosToAttach.getEnvioCorreosPK());
+                attachedEnvioCorreosCollection.add(envioCorreosCollectionEnvioCorreosToAttach);
+            }
+            empresas.setEnvioCorreosCollection(attachedEnvioCorreosCollection);
             Collection<Usuarios> attachedUsuariosCollection = new ArrayList<Usuarios>();
             for (Usuarios usuariosCollectionUsuariosToAttach : empresas.getUsuariosCollection()) {
                 usuariosCollectionUsuariosToAttach = em.getReference(usuariosCollectionUsuariosToAttach.getClass(), usuariosCollectionUsuariosToAttach.getIdUsuario());
@@ -81,6 +91,15 @@ public class EmpresasJpaController implements Serializable {
             }
             empresas.setGeocercasCollection(attachedGeocercasCollection);
             em.persist(empresas);
+            for (EnvioCorreos envioCorreosCollectionEnvioCorreos : empresas.getEnvioCorreosCollection()) {
+                Empresas oldEmpresasOfEnvioCorreosCollectionEnvioCorreos = envioCorreosCollectionEnvioCorreos.getEmpresas();
+                envioCorreosCollectionEnvioCorreos.setEmpresas(empresas);
+                envioCorreosCollectionEnvioCorreos = em.merge(envioCorreosCollectionEnvioCorreos);
+                if (oldEmpresasOfEnvioCorreosCollectionEnvioCorreos != null) {
+                    oldEmpresasOfEnvioCorreosCollectionEnvioCorreos.getEnvioCorreosCollection().remove(envioCorreosCollectionEnvioCorreos);
+                    oldEmpresasOfEnvioCorreosCollectionEnvioCorreos = em.merge(oldEmpresasOfEnvioCorreosCollectionEnvioCorreos);
+                }
+            }
             for (Usuarios usuariosCollectionUsuarios : empresas.getUsuariosCollection()) {
                 Empresas oldIdEmpresaOfUsuariosCollectionUsuarios = usuariosCollectionUsuarios.getIdEmpresa();
                 usuariosCollectionUsuarios.setIdEmpresa(empresas);
@@ -131,6 +150,8 @@ public class EmpresasJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             Empresas persistentEmpresas = em.find(Empresas.class, empresas.getIdEmpresa());
+            Collection<EnvioCorreos> envioCorreosCollectionOld = persistentEmpresas.getEnvioCorreosCollection();
+            Collection<EnvioCorreos> envioCorreosCollectionNew = empresas.getEnvioCorreosCollection();
             Collection<Usuarios> usuariosCollectionOld = persistentEmpresas.getUsuariosCollection();
             Collection<Usuarios> usuariosCollectionNew = empresas.getUsuariosCollection();
             Collection<Personas> personasCollectionOld = persistentEmpresas.getPersonasCollection();
@@ -140,6 +161,14 @@ public class EmpresasJpaController implements Serializable {
             Collection<Geocercas> geocercasCollectionOld = persistentEmpresas.getGeocercasCollection();
             Collection<Geocercas> geocercasCollectionNew = empresas.getGeocercasCollection();
             List<String> illegalOrphanMessages = null;
+            for (EnvioCorreos envioCorreosCollectionOldEnvioCorreos : envioCorreosCollectionOld) {
+                if (!envioCorreosCollectionNew.contains(envioCorreosCollectionOldEnvioCorreos)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain EnvioCorreos " + envioCorreosCollectionOldEnvioCorreos + " since its empresas field is not nullable.");
+                }
+            }
             for (Usuarios usuariosCollectionOldUsuarios : usuariosCollectionOld) {
                 if (!usuariosCollectionNew.contains(usuariosCollectionOldUsuarios)) {
                     if (illegalOrphanMessages == null) {
@@ -175,6 +204,13 @@ public class EmpresasJpaController implements Serializable {
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
+            Collection<EnvioCorreos> attachedEnvioCorreosCollectionNew = new ArrayList<EnvioCorreos>();
+            for (EnvioCorreos envioCorreosCollectionNewEnvioCorreosToAttach : envioCorreosCollectionNew) {
+                envioCorreosCollectionNewEnvioCorreosToAttach = em.getReference(envioCorreosCollectionNewEnvioCorreosToAttach.getClass(), envioCorreosCollectionNewEnvioCorreosToAttach.getEnvioCorreosPK());
+                attachedEnvioCorreosCollectionNew.add(envioCorreosCollectionNewEnvioCorreosToAttach);
+            }
+            envioCorreosCollectionNew = attachedEnvioCorreosCollectionNew;
+            empresas.setEnvioCorreosCollection(envioCorreosCollectionNew);
             Collection<Usuarios> attachedUsuariosCollectionNew = new ArrayList<Usuarios>();
             for (Usuarios usuariosCollectionNewUsuariosToAttach : usuariosCollectionNew) {
                 usuariosCollectionNewUsuariosToAttach = em.getReference(usuariosCollectionNewUsuariosToAttach.getClass(), usuariosCollectionNewUsuariosToAttach.getIdUsuario());
@@ -204,6 +240,17 @@ public class EmpresasJpaController implements Serializable {
             geocercasCollectionNew = attachedGeocercasCollectionNew;
             empresas.setGeocercasCollection(geocercasCollectionNew);
             empresas = em.merge(empresas);
+            for (EnvioCorreos envioCorreosCollectionNewEnvioCorreos : envioCorreosCollectionNew) {
+                if (!envioCorreosCollectionOld.contains(envioCorreosCollectionNewEnvioCorreos)) {
+                    Empresas oldEmpresasOfEnvioCorreosCollectionNewEnvioCorreos = envioCorreosCollectionNewEnvioCorreos.getEmpresas();
+                    envioCorreosCollectionNewEnvioCorreos.setEmpresas(empresas);
+                    envioCorreosCollectionNewEnvioCorreos = em.merge(envioCorreosCollectionNewEnvioCorreos);
+                    if (oldEmpresasOfEnvioCorreosCollectionNewEnvioCorreos != null && !oldEmpresasOfEnvioCorreosCollectionNewEnvioCorreos.equals(empresas)) {
+                        oldEmpresasOfEnvioCorreosCollectionNewEnvioCorreos.getEnvioCorreosCollection().remove(envioCorreosCollectionNewEnvioCorreos);
+                        oldEmpresasOfEnvioCorreosCollectionNewEnvioCorreos = em.merge(oldEmpresasOfEnvioCorreosCollectionNewEnvioCorreos);
+                    }
+                }
+            }
             for (Usuarios usuariosCollectionNewUsuarios : usuariosCollectionNew) {
                 if (!usuariosCollectionOld.contains(usuariosCollectionNewUsuarios)) {
                     Empresas oldIdEmpresaOfUsuariosCollectionNewUsuarios = usuariosCollectionNewUsuarios.getIdEmpresa();
@@ -278,6 +325,13 @@ public class EmpresasJpaController implements Serializable {
                 throw new NonexistentEntityException("The empresas with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
+            Collection<EnvioCorreos> envioCorreosCollectionOrphanCheck = empresas.getEnvioCorreosCollection();
+            for (EnvioCorreos envioCorreosCollectionOrphanCheckEnvioCorreos : envioCorreosCollectionOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Empresas (" + empresas + ") cannot be destroyed since the EnvioCorreos " + envioCorreosCollectionOrphanCheckEnvioCorreos + " in its envioCorreosCollection field has a non-nullable empresas field.");
+            }
             Collection<Usuarios> usuariosCollectionOrphanCheck = empresas.getUsuariosCollection();
             for (Usuarios usuariosCollectionOrphanCheckUsuarios : usuariosCollectionOrphanCheck) {
                 if (illegalOrphanMessages == null) {

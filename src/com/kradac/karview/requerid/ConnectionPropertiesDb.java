@@ -63,13 +63,15 @@ public class ConnectionPropertiesDb {
             this.countSend = 0;
 
             try {
-                this.emfLogic = Persistence.createEntityManagerFactory("ServerKarviewPU", getMappingDinamic(this.database));
+                this.emfLogic = Persistence.createEntityManagerFactory("ServerKarviewPU1", getMappingDinamic(this.database));
                 this.emfHistoric = Persistence.createEntityManagerFactory("ServerKarviewPU2", getMappingDinamic(this.databasehistoric));
-
+                
                 this.persistenceLogic = 1;
                 this.persistenceHistoric = 1;
                 this.cjc = new ConfiguracionesJpaController(this.choosePersistenceLogicOpen());
             } catch (PersistenceException e) {
+                System.out.println(e.getMessage());
+                System.out.println(e.getCause().getMessage());
                 JOptionPane.showMessageDialog(null, "Datos de Conexión con el SGBD son Invalidos, o los Servicios necesarios no estan Levantados.");
                 FrameFileConnection ffc = new FrameFileConnection();
                 ffc.setVisible(true);

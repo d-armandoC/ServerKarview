@@ -38,7 +38,7 @@ public class ThreadCountConnectionDb extends Thread {
                 }
                 sleep(60000);
             } catch (InterruptedException ex) {
-                System.out.println("Hilo Interrumpido de Cantidade Conexiones: " + ex.getMessage());
+                System.out.println("Hilo Interrumpido de Cantida de Conexiones: " + ex.getMessage());
             } catch (SQLException ex) {
                 try {
                     Gui.lblCountConecctionBd.setText("Sin Conexión con la BD");

@@ -3,6 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package com.kradac.karview.entities.historic;
 
 import java.io.Serializable;
@@ -36,7 +37,6 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "DatoInvalidos.findByTrama", query = "SELECT d FROM DatoInvalidos d WHERE d.trama = :trama"),
     @NamedQuery(name = "DatoInvalidos.findByExcepcion", query = "SELECT d FROM DatoInvalidos d WHERE d.excepcion = :excepcion")})
 public class DatoInvalidos implements Serializable {
-
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,7 +69,7 @@ public class DatoInvalidos implements Serializable {
         this.idTipoDatoInvalido = idTipoDatoInvalido;
         this.fechaHoraRegistro = fechaHoraRegistro;
     }
-
+    
     public DatoInvalidos(int idTipoDatoInvalido, Date fechaHoraRegistro, String equipo, String trama, String excepcion) {
         this.idTipoDatoInvalido = idTipoDatoInvalido;
         this.fechaHoraRegistro = fechaHoraRegistro;
@@ -78,8 +78,8 @@ public class DatoInvalidos implements Serializable {
         this.excepcion = excepcion;
     }
     
-    public DatoInvalidos(int idDatoInvalido, Date fechaHoraRegistro, String equipo, String trama) {
-         this.idDatoInvalido = idDatoInvalido;
+     public DatoInvalidos(int idTipoDatoInvalido, Date fechaHoraRegistro, String equipo, String trama) {
+        this.idTipoDatoInvalido = idTipoDatoInvalido;
         this.fechaHoraRegistro = fechaHoraRegistro;
         this.equipo = equipo;
         this.trama = trama;
@@ -157,5 +157,5 @@ public class DatoInvalidos implements Serializable {
     public String toString() {
         return "com.kradac.karview.entities.historic.DatoInvalidos[ idDatoInvalido=" + idDatoInvalido + " ]";
     }
-
+    
 }

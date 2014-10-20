@@ -3,19 +3,21 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package com.kradac.karview.entities.controllers;
 
-import com.kradac.karview.entities.logic.SkyEventos;
+import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
+import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.kradac.karview.entities.logic.UltimoDatoSkps;
-import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
-import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
+import com.kradac.karview.entities.logic.EnvioCorreos;
+import com.kradac.karview.entities.logic.SkyEventos;
 import java.util.ArrayList;
 import java.util.Collection;
+import com.kradac.karview.entities.logic.UltimoDatoSkps;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -38,6 +40,9 @@ public class SkyEventosJpaController implements Serializable {
     }
 
     public void create(SkyEventos skyEventos) {
+        if (skyEventos.getEnvioCorreosCollection() == null) {
+            skyEventos.setEnvioCorreosCollection(new ArrayList<EnvioCorreos>());
+        }
         if (skyEventos.getUltimoDatoSkpsCollection() == null) {
             skyEventos.setUltimoDatoSkpsCollection(new ArrayList<UltimoDatoSkps>());
         }
@@ -45,6 +50,12 @@ public class SkyEventosJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            Collection<EnvioCorreos> attachedEnvioCorreosCollection = new ArrayList<EnvioCorreos>();
+            for (EnvioCorreos envioCorreosCollectionEnvioCorreosToAttach : skyEventos.getEnvioCorreosCollection()) {
+                envioCorreosCollectionEnvioCorreosToAttach = em.getReference(envioCorreosCollectionEnvioCorreosToAttach.getClass(), envioCorreosCollectionEnvioCorreosToAttach.getEnvioCorreosPK());
+                attachedEnvioCorreosCollection.add(envioCorreosCollectionEnvioCorreosToAttach);
+            }
+            skyEventos.setEnvioCorreosCollection(attachedEnvioCorreosCollection);
             Collection<UltimoDatoSkps> attachedUltimoDatoSkpsCollection = new ArrayList<UltimoDatoSkps>();
             for (UltimoDatoSkps ultimoDatoSkpsCollectionUltimoDatoSkpsToAttach : skyEventos.getUltimoDatoSkpsCollection()) {
                 ultimoDatoSkpsCollectionUltimoDatoSkpsToAttach = em.getReference(ultimoDatoSkpsCollectionUltimoDatoSkpsToAttach.getClass(), ultimoDatoSkpsCollectionUltimoDatoSkpsToAttach.getIdUltimoDatoSkp());
@@ -52,6 +63,15 @@ public class SkyEventosJpaController implements Serializable {
             }
             skyEventos.setUltimoDatoSkpsCollection(attachedUltimoDatoSkpsCollection);
             em.persist(skyEventos);
+            for (EnvioCorreos envioCorreosCollectionEnvioCorreos : skyEventos.getEnvioCorreosCollection()) {
+                SkyEventos oldSkyEventosOfEnvioCorreosCollectionEnvioCorreos = envioCorreosCollectionEnvioCorreos.getSkyEventos();
+                envioCorreosCollectionEnvioCorreos.setSkyEventos(skyEventos);
+                envioCorreosCollectionEnvioCorreos = em.merge(envioCorreosCollectionEnvioCorreos);
+                if (oldSkyEventosOfEnvioCorreosCollectionEnvioCorreos != null) {
+                    oldSkyEventosOfEnvioCorreosCollectionEnvioCorreos.getEnvioCorreosCollection().remove(envioCorreosCollectionEnvioCorreos);
+                    oldSkyEventosOfEnvioCorreosCollectionEnvioCorreos = em.merge(oldSkyEventosOfEnvioCorreosCollectionEnvioCorreos);
+                }
+            }
             for (UltimoDatoSkps ultimoDatoSkpsCollectionUltimoDatoSkps : skyEventos.getUltimoDatoSkpsCollection()) {
                 SkyEventos oldIdSkyEventoOfUltimoDatoSkpsCollectionUltimoDatoSkps = ultimoDatoSkpsCollectionUltimoDatoSkps.getIdSkyEvento();
                 ultimoDatoSkpsCollectionUltimoDatoSkps.setIdSkyEvento(skyEventos);
@@ -75,9 +95,19 @@ public class SkyEventosJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             SkyEventos persistentSkyEventos = em.find(SkyEventos.class, skyEventos.getIdSkyEvento());
+            Collection<EnvioCorreos> envioCorreosCollectionOld = persistentSkyEventos.getEnvioCorreosCollection();
+            Collection<EnvioCorreos> envioCorreosCollectionNew = skyEventos.getEnvioCorreosCollection();
             Collection<UltimoDatoSkps> ultimoDatoSkpsCollectionOld = persistentSkyEventos.getUltimoDatoSkpsCollection();
             Collection<UltimoDatoSkps> ultimoDatoSkpsCollectionNew = skyEventos.getUltimoDatoSkpsCollection();
             List<String> illegalOrphanMessages = null;
+            for (EnvioCorreos envioCorreosCollectionOldEnvioCorreos : envioCorreosCollectionOld) {
+                if (!envioCorreosCollectionNew.contains(envioCorreosCollectionOldEnvioCorreos)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain EnvioCorreos " + envioCorreosCollectionOldEnvioCorreos + " since its skyEventos field is not nullable.");
+                }
+            }
             for (UltimoDatoSkps ultimoDatoSkpsCollectionOldUltimoDatoSkps : ultimoDatoSkpsCollectionOld) {
                 if (!ultimoDatoSkpsCollectionNew.contains(ultimoDatoSkpsCollectionOldUltimoDatoSkps)) {
                     if (illegalOrphanMessages == null) {
@@ -89,6 +119,13 @@ public class SkyEventosJpaController implements Serializable {
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
+            Collection<EnvioCorreos> attachedEnvioCorreosCollectionNew = new ArrayList<EnvioCorreos>();
+            for (EnvioCorreos envioCorreosCollectionNewEnvioCorreosToAttach : envioCorreosCollectionNew) {
+                envioCorreosCollectionNewEnvioCorreosToAttach = em.getReference(envioCorreosCollectionNewEnvioCorreosToAttach.getClass(), envioCorreosCollectionNewEnvioCorreosToAttach.getEnvioCorreosPK());
+                attachedEnvioCorreosCollectionNew.add(envioCorreosCollectionNewEnvioCorreosToAttach);
+            }
+            envioCorreosCollectionNew = attachedEnvioCorreosCollectionNew;
+            skyEventos.setEnvioCorreosCollection(envioCorreosCollectionNew);
             Collection<UltimoDatoSkps> attachedUltimoDatoSkpsCollectionNew = new ArrayList<UltimoDatoSkps>();
             for (UltimoDatoSkps ultimoDatoSkpsCollectionNewUltimoDatoSkpsToAttach : ultimoDatoSkpsCollectionNew) {
                 ultimoDatoSkpsCollectionNewUltimoDatoSkpsToAttach = em.getReference(ultimoDatoSkpsCollectionNewUltimoDatoSkpsToAttach.getClass(), ultimoDatoSkpsCollectionNewUltimoDatoSkpsToAttach.getIdUltimoDatoSkp());
@@ -97,6 +134,17 @@ public class SkyEventosJpaController implements Serializable {
             ultimoDatoSkpsCollectionNew = attachedUltimoDatoSkpsCollectionNew;
             skyEventos.setUltimoDatoSkpsCollection(ultimoDatoSkpsCollectionNew);
             skyEventos = em.merge(skyEventos);
+            for (EnvioCorreos envioCorreosCollectionNewEnvioCorreos : envioCorreosCollectionNew) {
+                if (!envioCorreosCollectionOld.contains(envioCorreosCollectionNewEnvioCorreos)) {
+                    SkyEventos oldSkyEventosOfEnvioCorreosCollectionNewEnvioCorreos = envioCorreosCollectionNewEnvioCorreos.getSkyEventos();
+                    envioCorreosCollectionNewEnvioCorreos.setSkyEventos(skyEventos);
+                    envioCorreosCollectionNewEnvioCorreos = em.merge(envioCorreosCollectionNewEnvioCorreos);
+                    if (oldSkyEventosOfEnvioCorreosCollectionNewEnvioCorreos != null && !oldSkyEventosOfEnvioCorreosCollectionNewEnvioCorreos.equals(skyEventos)) {
+                        oldSkyEventosOfEnvioCorreosCollectionNewEnvioCorreos.getEnvioCorreosCollection().remove(envioCorreosCollectionNewEnvioCorreos);
+                        oldSkyEventosOfEnvioCorreosCollectionNewEnvioCorreos = em.merge(oldSkyEventosOfEnvioCorreosCollectionNewEnvioCorreos);
+                    }
+                }
+            }
             for (UltimoDatoSkps ultimoDatoSkpsCollectionNewUltimoDatoSkps : ultimoDatoSkpsCollectionNew) {
                 if (!ultimoDatoSkpsCollectionOld.contains(ultimoDatoSkpsCollectionNewUltimoDatoSkps)) {
                     SkyEventos oldIdSkyEventoOfUltimoDatoSkpsCollectionNewUltimoDatoSkps = ultimoDatoSkpsCollectionNewUltimoDatoSkps.getIdSkyEvento();
@@ -138,6 +186,13 @@ public class SkyEventosJpaController implements Serializable {
                 throw new NonexistentEntityException("The skyEventos with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
+            Collection<EnvioCorreos> envioCorreosCollectionOrphanCheck = skyEventos.getEnvioCorreosCollection();
+            for (EnvioCorreos envioCorreosCollectionOrphanCheckEnvioCorreos : envioCorreosCollectionOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This SkyEventos (" + skyEventos + ") cannot be destroyed since the EnvioCorreos " + envioCorreosCollectionOrphanCheckEnvioCorreos + " in its envioCorreosCollection field has a non-nullable skyEventos field.");
+            }
             Collection<UltimoDatoSkps> ultimoDatoSkpsCollectionOrphanCheck = skyEventos.getUltimoDatoSkpsCollection();
             for (UltimoDatoSkps ultimoDatoSkpsCollectionOrphanCheckUltimoDatoSkps : ultimoDatoSkpsCollectionOrphanCheck) {
                 if (illegalOrphanMessages == null) {
@@ -202,8 +257,8 @@ public class SkyEventosJpaController implements Serializable {
             em.close();
         }
     }
-
-    public SkyEventos findSkyEventosByParametro(short parameter) {
+    
+        public SkyEventos findSkyEventosByParametro(short parameter) {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<SkyEventos> qry;
@@ -216,13 +271,13 @@ public class SkyEventosJpaController implements Serializable {
             em.close();
         }
     }
-
-    public SkyEventos findSkyEventosByEvento(short evento) {
+        
+            public SkyEventos findSkyEventosByEvento(short evento) {
         EntityManager em = getEntityManager();
         try {
             List<SkyEventos> lstSkyEventos;
             SkyEventos se = null;
-
+            
             TypedQuery<SkyEventos> qry;
             qry = em.createNamedQuery("SkyEventos.findByEvento", SkyEventos.class);
             qry.setParameter("evento", evento);
@@ -238,5 +293,5 @@ public class SkyEventosJpaController implements Serializable {
             em.close();
         }
     }
-
+    
 }

@@ -6,20 +6,21 @@
 
 package com.kradac.karview.entities.controllers;
 
+import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
+import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.kradac.karview.entities.logic.Generos;
 import com.kradac.karview.entities.logic.Empresas;
+import com.kradac.karview.entities.logic.Generos;
+import com.kradac.karview.entities.logic.EnvioCorreos;
 import com.kradac.karview.entities.logic.Personas;
-import com.kradac.karview.entities.logic.Usuarios;
 import java.util.ArrayList;
 import java.util.Collection;
+import com.kradac.karview.entities.logic.Usuarios;
 import com.kradac.karview.entities.logic.Vehiculos;
-import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
-import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -40,6 +41,9 @@ public class PersonasJpaController implements Serializable {
     }
 
     public void create(Personas personas) {
+        if (personas.getEnvioCorreosCollection() == null) {
+            personas.setEnvioCorreosCollection(new ArrayList<EnvioCorreos>());
+        }
         if (personas.getUsuariosCollection() == null) {
             personas.setUsuariosCollection(new ArrayList<Usuarios>());
         }
@@ -50,16 +54,22 @@ public class PersonasJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Generos idGenero = personas.getIdGenero();
-            if (idGenero != null) {
-                idGenero = em.getReference(idGenero.getClass(), idGenero.getIdGenero());
-                personas.setIdGenero(idGenero);
-            }
             Empresas idEmpresa = personas.getIdEmpresa();
             if (idEmpresa != null) {
                 idEmpresa = em.getReference(idEmpresa.getClass(), idEmpresa.getIdEmpresa());
                 personas.setIdEmpresa(idEmpresa);
             }
+            Generos idGenero = personas.getIdGenero();
+            if (idGenero != null) {
+                idGenero = em.getReference(idGenero.getClass(), idGenero.getIdGenero());
+                personas.setIdGenero(idGenero);
+            }
+            Collection<EnvioCorreos> attachedEnvioCorreosCollection = new ArrayList<EnvioCorreos>();
+            for (EnvioCorreos envioCorreosCollectionEnvioCorreosToAttach : personas.getEnvioCorreosCollection()) {
+                envioCorreosCollectionEnvioCorreosToAttach = em.getReference(envioCorreosCollectionEnvioCorreosToAttach.getClass(), envioCorreosCollectionEnvioCorreosToAttach.getEnvioCorreosPK());
+                attachedEnvioCorreosCollection.add(envioCorreosCollectionEnvioCorreosToAttach);
+            }
+            personas.setEnvioCorreosCollection(attachedEnvioCorreosCollection);
             Collection<Usuarios> attachedUsuariosCollection = new ArrayList<Usuarios>();
             for (Usuarios usuariosCollectionUsuariosToAttach : personas.getUsuariosCollection()) {
                 usuariosCollectionUsuariosToAttach = em.getReference(usuariosCollectionUsuariosToAttach.getClass(), usuariosCollectionUsuariosToAttach.getIdUsuario());
@@ -73,13 +83,22 @@ public class PersonasJpaController implements Serializable {
             }
             personas.setVehiculosCollection(attachedVehiculosCollection);
             em.persist(personas);
+            if (idEmpresa != null) {
+                idEmpresa.getPersonasCollection().add(personas);
+                idEmpresa = em.merge(idEmpresa);
+            }
             if (idGenero != null) {
                 idGenero.getPersonasCollection().add(personas);
                 idGenero = em.merge(idGenero);
             }
-            if (idEmpresa != null) {
-                idEmpresa.getPersonasCollection().add(personas);
-                idEmpresa = em.merge(idEmpresa);
+            for (EnvioCorreos envioCorreosCollectionEnvioCorreos : personas.getEnvioCorreosCollection()) {
+                Personas oldPersonasOfEnvioCorreosCollectionEnvioCorreos = envioCorreosCollectionEnvioCorreos.getPersonas();
+                envioCorreosCollectionEnvioCorreos.setPersonas(personas);
+                envioCorreosCollectionEnvioCorreos = em.merge(envioCorreosCollectionEnvioCorreos);
+                if (oldPersonasOfEnvioCorreosCollectionEnvioCorreos != null) {
+                    oldPersonasOfEnvioCorreosCollectionEnvioCorreos.getEnvioCorreosCollection().remove(envioCorreosCollectionEnvioCorreos);
+                    oldPersonasOfEnvioCorreosCollectionEnvioCorreos = em.merge(oldPersonasOfEnvioCorreosCollectionEnvioCorreos);
+                }
             }
             for (Usuarios usuariosCollectionUsuarios : personas.getUsuariosCollection()) {
                 Personas oldIdPersonaOfUsuariosCollectionUsuarios = usuariosCollectionUsuarios.getIdPersona();
@@ -113,15 +132,25 @@ public class PersonasJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             Personas persistentPersonas = em.find(Personas.class, personas.getIdPersona());
-            Generos idGeneroOld = persistentPersonas.getIdGenero();
-            Generos idGeneroNew = personas.getIdGenero();
             Empresas idEmpresaOld = persistentPersonas.getIdEmpresa();
             Empresas idEmpresaNew = personas.getIdEmpresa();
+            Generos idGeneroOld = persistentPersonas.getIdGenero();
+            Generos idGeneroNew = personas.getIdGenero();
+            Collection<EnvioCorreos> envioCorreosCollectionOld = persistentPersonas.getEnvioCorreosCollection();
+            Collection<EnvioCorreos> envioCorreosCollectionNew = personas.getEnvioCorreosCollection();
             Collection<Usuarios> usuariosCollectionOld = persistentPersonas.getUsuariosCollection();
             Collection<Usuarios> usuariosCollectionNew = personas.getUsuariosCollection();
             Collection<Vehiculos> vehiculosCollectionOld = persistentPersonas.getVehiculosCollection();
             Collection<Vehiculos> vehiculosCollectionNew = personas.getVehiculosCollection();
             List<String> illegalOrphanMessages = null;
+            for (EnvioCorreos envioCorreosCollectionOldEnvioCorreos : envioCorreosCollectionOld) {
+                if (!envioCorreosCollectionNew.contains(envioCorreosCollectionOldEnvioCorreos)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain EnvioCorreos " + envioCorreosCollectionOldEnvioCorreos + " since its personas field is not nullable.");
+                }
+            }
             for (Usuarios usuariosCollectionOldUsuarios : usuariosCollectionOld) {
                 if (!usuariosCollectionNew.contains(usuariosCollectionOldUsuarios)) {
                     if (illegalOrphanMessages == null) {
@@ -141,14 +170,21 @@ public class PersonasJpaController implements Serializable {
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            if (idGeneroNew != null) {
-                idGeneroNew = em.getReference(idGeneroNew.getClass(), idGeneroNew.getIdGenero());
-                personas.setIdGenero(idGeneroNew);
-            }
             if (idEmpresaNew != null) {
                 idEmpresaNew = em.getReference(idEmpresaNew.getClass(), idEmpresaNew.getIdEmpresa());
                 personas.setIdEmpresa(idEmpresaNew);
             }
+            if (idGeneroNew != null) {
+                idGeneroNew = em.getReference(idGeneroNew.getClass(), idGeneroNew.getIdGenero());
+                personas.setIdGenero(idGeneroNew);
+            }
+            Collection<EnvioCorreos> attachedEnvioCorreosCollectionNew = new ArrayList<EnvioCorreos>();
+            for (EnvioCorreos envioCorreosCollectionNewEnvioCorreosToAttach : envioCorreosCollectionNew) {
+                envioCorreosCollectionNewEnvioCorreosToAttach = em.getReference(envioCorreosCollectionNewEnvioCorreosToAttach.getClass(), envioCorreosCollectionNewEnvioCorreosToAttach.getEnvioCorreosPK());
+                attachedEnvioCorreosCollectionNew.add(envioCorreosCollectionNewEnvioCorreosToAttach);
+            }
+            envioCorreosCollectionNew = attachedEnvioCorreosCollectionNew;
+            personas.setEnvioCorreosCollection(envioCorreosCollectionNew);
             Collection<Usuarios> attachedUsuariosCollectionNew = new ArrayList<Usuarios>();
             for (Usuarios usuariosCollectionNewUsuariosToAttach : usuariosCollectionNew) {
                 usuariosCollectionNewUsuariosToAttach = em.getReference(usuariosCollectionNewUsuariosToAttach.getClass(), usuariosCollectionNewUsuariosToAttach.getIdUsuario());
@@ -164,6 +200,14 @@ public class PersonasJpaController implements Serializable {
             vehiculosCollectionNew = attachedVehiculosCollectionNew;
             personas.setVehiculosCollection(vehiculosCollectionNew);
             personas = em.merge(personas);
+            if (idEmpresaOld != null && !idEmpresaOld.equals(idEmpresaNew)) {
+                idEmpresaOld.getPersonasCollection().remove(personas);
+                idEmpresaOld = em.merge(idEmpresaOld);
+            }
+            if (idEmpresaNew != null && !idEmpresaNew.equals(idEmpresaOld)) {
+                idEmpresaNew.getPersonasCollection().add(personas);
+                idEmpresaNew = em.merge(idEmpresaNew);
+            }
             if (idGeneroOld != null && !idGeneroOld.equals(idGeneroNew)) {
                 idGeneroOld.getPersonasCollection().remove(personas);
                 idGeneroOld = em.merge(idGeneroOld);
@@ -172,13 +216,16 @@ public class PersonasJpaController implements Serializable {
                 idGeneroNew.getPersonasCollection().add(personas);
                 idGeneroNew = em.merge(idGeneroNew);
             }
-            if (idEmpresaOld != null && !idEmpresaOld.equals(idEmpresaNew)) {
-                idEmpresaOld.getPersonasCollection().remove(personas);
-                idEmpresaOld = em.merge(idEmpresaOld);
-            }
-            if (idEmpresaNew != null && !idEmpresaNew.equals(idEmpresaOld)) {
-                idEmpresaNew.getPersonasCollection().add(personas);
-                idEmpresaNew = em.merge(idEmpresaNew);
+            for (EnvioCorreos envioCorreosCollectionNewEnvioCorreos : envioCorreosCollectionNew) {
+                if (!envioCorreosCollectionOld.contains(envioCorreosCollectionNewEnvioCorreos)) {
+                    Personas oldPersonasOfEnvioCorreosCollectionNewEnvioCorreos = envioCorreosCollectionNewEnvioCorreos.getPersonas();
+                    envioCorreosCollectionNewEnvioCorreos.setPersonas(personas);
+                    envioCorreosCollectionNewEnvioCorreos = em.merge(envioCorreosCollectionNewEnvioCorreos);
+                    if (oldPersonasOfEnvioCorreosCollectionNewEnvioCorreos != null && !oldPersonasOfEnvioCorreosCollectionNewEnvioCorreos.equals(personas)) {
+                        oldPersonasOfEnvioCorreosCollectionNewEnvioCorreos.getEnvioCorreosCollection().remove(envioCorreosCollectionNewEnvioCorreos);
+                        oldPersonasOfEnvioCorreosCollectionNewEnvioCorreos = em.merge(oldPersonasOfEnvioCorreosCollectionNewEnvioCorreos);
+                    }
+                }
             }
             for (Usuarios usuariosCollectionNewUsuarios : usuariosCollectionNew) {
                 if (!usuariosCollectionOld.contains(usuariosCollectionNewUsuarios)) {
@@ -232,6 +279,13 @@ public class PersonasJpaController implements Serializable {
                 throw new NonexistentEntityException("The personas with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
+            Collection<EnvioCorreos> envioCorreosCollectionOrphanCheck = personas.getEnvioCorreosCollection();
+            for (EnvioCorreos envioCorreosCollectionOrphanCheckEnvioCorreos : envioCorreosCollectionOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Personas (" + personas + ") cannot be destroyed since the EnvioCorreos " + envioCorreosCollectionOrphanCheckEnvioCorreos + " in its envioCorreosCollection field has a non-nullable personas field.");
+            }
             Collection<Usuarios> usuariosCollectionOrphanCheck = personas.getUsuariosCollection();
             for (Usuarios usuariosCollectionOrphanCheckUsuarios : usuariosCollectionOrphanCheck) {
                 if (illegalOrphanMessages == null) {
@@ -249,15 +303,15 @@ public class PersonasJpaController implements Serializable {
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            Generos idGenero = personas.getIdGenero();
-            if (idGenero != null) {
-                idGenero.getPersonasCollection().remove(personas);
-                idGenero = em.merge(idGenero);
-            }
             Empresas idEmpresa = personas.getIdEmpresa();
             if (idEmpresa != null) {
                 idEmpresa.getPersonasCollection().remove(personas);
                 idEmpresa = em.merge(idEmpresa);
+            }
+            Generos idGenero = personas.getIdGenero();
+            if (idGenero != null) {
+                idGenero.getPersonasCollection().remove(personas);
+                idGenero = em.merge(idGenero);
             }
             em.remove(personas);
             em.getTransaction().commit();

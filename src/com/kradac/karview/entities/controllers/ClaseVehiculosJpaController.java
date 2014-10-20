@@ -6,21 +6,20 @@
 
 package com.kradac.karview.entities.controllers;
 
-
 import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
 import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import com.kradac.karview.entities.logic.ClaseVehiculos;
-import com.kradac.karview.entities.logic.Vehiculos;
 import java.io.Serializable;
+import javax.persistence.Query;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import com.kradac.karview.entities.logic.Vehiculos;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 
 /**
  *

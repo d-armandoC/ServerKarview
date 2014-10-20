@@ -95,7 +95,10 @@ public class Configuraciones implements Serializable {
 
     @Override
     public String toString() {
-        return "com.kradac.karview.entitis.Configuraciones[ idConfiguracion=" + idConfiguracion + " ]";
+        return "Configuraciones{" + "idConfiguracion=" + idConfiguracion + ", nombre=" + nombre + ", valor=" + valor + '}';
     }
+
+    
+    
     
 }
