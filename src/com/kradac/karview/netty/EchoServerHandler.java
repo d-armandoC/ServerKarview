@@ -116,7 +116,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         }
         this.data = auxdata;
         buf.clear();
-        System.out.println("Trama Actual: "+data);
+        System.out.println("Trama Actual: " + data);
 
         if (auxdata.indexOf("0@8000001") == 0) {
             System.out.println("Trama Conexion SKP+: [" + auxdata + "]");
@@ -126,22 +126,15 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             System.out.println("Trama Conexion SKP: [" + auxdata + "]");
             u.sendToFile(3, "skp", this.data);
             processConnectionData(u.clearDataConnection(this.data));
-        } 
-//        else if (auxdata.indexOf("0150") == 0) {
-//            System.out.println("Respuesta Cmd: [" + auxdata + "]");
-//            //processResponseComand(this.data.substring(5));
-//        } 
-        else if (auxdata.indexOf("0s0420") == 0 ) {//|| auxdata.indexOf("0r0420")==0
-            System.out.println("Trama SKP: [" + auxdata + "]");
-            u.sendToFile(3, "skp", this.data);
-            processDataNormal(auxdata);
-        } 
+        } //        else if (auxdata.indexOf("0150") == 0) {
+        //            System.out.println("Respuesta Cmd: [" + auxdata + "]");
+        //            //processResponseComand(this.data.substring(5));
+        //        } 
         else if (auxdata.indexOf("0420") == 0) {
-            System.out.println("Trama SKP+ +param: [" + auxdata + "]");
+            System.out.println("Trama SKP: [" + data + "]");
             u.sendToFile(3, "skp", this.data);
-            tramaSKPparam_mas_mas(this.data.substring(11));
-        } 
-        else if (auxdata.indexOf("00@8488") == 0) { // 0@8488ￌ
+            procesarSKP(this.data);
+        } else if (auxdata.indexOf("0@8488") == 0) { // 0@8488ￌ
             System.out.println("Trama SKP+ -param: [" + auxdata + "]");
             u.sendToFile(3, "skp", this.data);
             processDataNormal(this.data.substring(9));
@@ -159,7 +152,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         }
     }
 
-    
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         ctx.flush();
@@ -191,22 +183,22 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
     }
 
     private void processConnectionData(String device) {
-        if (!registered) {
-            e = ejc.findEquiposByEquipo(device);
+        System.out.println("Equipo  "+ device);
+             e = ejc.findEquiposByEquipo(device);
             if (e == null) {
                 auxDevice = device;
                 System.out.println("Dato Enviado a Tabla de Invalidos por no estar registrado en el sistema [" + auxDevice + "].");
                 dijc.create(new DatoInvalidos(3, new Date(), auxDevice, this.data, ""));
             } else {
-                registered = true;
+//                registered = true;
                 uds = udsjc.findUltimoDatoSkpsByIdEquipo(e.getIdEquipo());
-                    System.out.println(e.getEquipo());
+                System.out.println(e.getEquipo());
                 v = vjc.findVehiculosByEquipo(e.getEquipo());
                 if (v == null) {
                     System.out.println("No hay vehiculo asociado al Equipo [" + e.getEquipo() + "]");
                 }
                 if (uds == null) {
-                     udsjc.create(new UltimoDatoSkps(new Date(), new Date(), 0.0, 0.0, 0.0, 0.0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, "", 0,
+                    udsjc.create(new UltimoDatoSkps(new Date(), new Date(), 0.0, 0.0, 0.0, 0.0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, "", 0,
                             e, new SkyEventos(1)));
                 } else {
                     try {
@@ -214,7 +206,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         uds.setFechaHoraUltDato(new Date());
                         udsjc.edit(uds);
                     } catch (NonexistentEntityException ex) {
-                        udsjc.create(new UltimoDatoSkps(new Date(), new Date(), 0.0, 0.0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, "",0,
+                        udsjc.create(new UltimoDatoSkps(new Date(), new Date(), 0.0, 0.0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, (short) 0, "", 0,
                                 e, new SkyEventos(1)));
                     } catch (Exception ex) {
                         System.out.println("Excepcion al Editar Dato Conexion TCP [" + this.data + "] [" + ex.getMessage() + "]");
@@ -222,7 +214,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                     }
                 }
                 processSendComand();
-            }
         }
     }
 
@@ -257,6 +248,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         auxDevice = dataHeader[1];
                     }
                 }
+                System.out.println("gpio:" + dataHeader[2] + "::::");
                 gpio = u.convertNumberToHexadecimal(dataHeader[2]);
 //                p = pjc.findPuntosByGeocercaSkp(dataHeader[3]);
 //                if (dataHeader.length == 5) {
@@ -334,13 +326,18 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             System.out.println("Poblemas de Fecha y Hora [" + this.data + "]");
         }
     }
-    
-    private void tramaSKPparam_mas_mas(String trama) {
+
+    private void procesarSKP(String trama) {
+        
+        
         String[] dataTrama = trama.split(",");
         Calendar objCalDevice = u.validateDate(dataTrama[10], dataTrama[2].substring(0, dataTrama[2].lastIndexOf('.')), true);
         if (objCalDevice != null) {
             boolean haveSpace = true;
             String header = dataTrama[0].trim();
+            String gpiodat = dataTrama[1].trim();
+            String gpiodata[] = gpiodat.split(" ");
+            
 
             while (haveSpace) {
                 header = header.replace("  ", " ");
@@ -348,13 +345,11 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             }
 
             String dataHeader[] = header.split(" ");
-
             String gpio;
-
-            if (dataHeader.length == 6 || dataHeader.length == 5) {
-                se = sejc.findSkyEventosByParametro(Short.parseShort(dataHeader[0]));
+            if (dataHeader.length == 3 || dataHeader.length == 4) {
+                se = sejc.findSkyEventosByParametro(Short.parseShort(dataHeader[1].substring(0, 1)));
                 if (!registered) {
-                    e = ejc.findEquiposByEquipo(dataHeader[1]);
+                    e = ejc.findEquiposByEquipo(dataHeader[1].substring(1, dataHeader[1].length()));
                     if (e != null) {
                         registered = true;
                         v = vjc.findVehiculosByEquipo(e.getEquipo());
@@ -365,18 +360,21 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         auxDevice = dataHeader[1];
                     }
                 }
-                gpio = u.convertNumberToHexadecimal(dataHeader[2]);
+                Utilities.isSKpat=true;
+                gpio = u.convertNumberToHexadecimal(gpiodata[0]);
+                Utilities.isSKpat=false;
 //                p = pjc.findPuntosByGeocercaSkp(dataHeader[3]);
 //                if (dataHeader.length == 5) {
 //                    p = pjc.findPuntosByGeocercaSkp("FFFF");
 //                }
             } else {
+
                 if (!registered) {
                     e = ejc.findEquiposByEquipo(dataHeader[0]);
                     if (e != null) {
                         registered = true;
                         v = vjc.findVehiculosByEquipo(e.getEquipo());
-                        
+
                         if (v == null) {
                             System.out.println("No hay vehiculo asociado al Equipo [" + e.getEquipo() + "]");
                         }
@@ -384,21 +382,23 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         auxDevice = dataHeader[0];
                     }
                 }
-                System.out.println(dataHeader[1]);
-                gpio = u.convertNumberToHexadecimal(dataHeader[1]);
-//                se = sejc.findSkyEventosByEvento(Short.parseShort(dataHeader[2]));
-//                if (se == null) {
-//                    se = sejc.findSkyEventos(1);
-//                }
+
+               gpio = u.convertNumberToHexadecimal(gpiodata[0]);
+                se = sejc.findSkyEventosByEvento(Short.parseShort(dataHeader[1].substring(0, 1)));
+                System.out.println("Eky Evento:  "+se);
+                System.out.println("se" + se);
+                if (se == null) {
+                    se = sejc.findSkyEventos(1);
+                }
 //                p = pjc.findPuntosByGeocercaSkp("FFFF");
             }
 
             if (registered) {
-                double latitud = u.convertLatLonSkp(dataTrama[3], dataTrama[4]);
-                double longitud = u.convertLatLonSkp(dataTrama[5], dataTrama[6]);
-                double speed = Math.rint(Double.parseDouble(dataTrama[7]) * 1.85 * 100) / 100;
-                double course = Double.parseDouble(dataTrama[8]);
 
+                double latitud = u.convertLatLonSkp(dataTrama[2], dataTrama[3]);
+                double longitud = u.convertLatLonSkp(dataTrama[4], dataTrama[5]);
+                double speed = Math.rint(Double.parseDouble(dataTrama[8]) * 1.85 * 100) / 100;
+                double course = Double.parseDouble(dataTrama[9]);
                 if (se.getIdSkyEvento() == 10 || se.getIdSkyEvento() == 11) {
                     if (speed > 90) {
                         se = sejc.findSkyEventos(21);
@@ -407,7 +407,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         se = sejc.findSkyEventos(12);
                     }
                 }
-
                 try {
                     dsjc.create(new DatoSpks(new DatoSpksPK(e.getIdEquipo(), objCalDevice.getTime(), objCalDevice.getTime(), se.getIdSkyEvento()), new Date(), latitud, longitud, speed, course,
                             Short.parseShort("" + gpio.charAt(8)),
@@ -423,11 +422,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                     if (se.getIdSkyEvento() == 12 || se.getIdSkyEvento() == 21) {
                         u.executeProcedureExcesoVelocidades(v.getIdVehiculo(), speed);
                     }
-//                    if (p.getIdPunto() > 1) {
-//                        u.executeProcedurePapeletaDespachos(v.getIdVehiculo(), p.getIdPunto(), objCalDevice.getTime(), speed);
-//                    }
-//                    u.executeProcedureAsignarRutaSkp(v.getIdVehiculo(), objCalDevice.getTime());
-                    sendMails();
+//                  sendMails();
                 } catch (PreexistingEntityException ex) {
                     System.out.println("Dato ya Existe [" + this.data + "]");
                     dijc.create(new DatoInvalidos(5, new Date(), e.getEquipo(), this.data));
@@ -437,14 +432,13 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                 }
             } else {
                 dijc.create(new DatoInvalidos(3, new Date(), auxDevice, this.data));
-                System.out.println("No se encuentra registrado [" + this.data + "].");
+                System.out.println("No se encuentra registrado:  [" + this.data + "].");
             }
         } else {
             dijc.create(new DatoInvalidos(4, new Date(), e.getEquipo(), this.data));
             System.out.println("Poblemas de Fecha y Hora [" + this.data + "]");
         }
     }
-
 
     private void processResponseComand(String trama) {
         try {

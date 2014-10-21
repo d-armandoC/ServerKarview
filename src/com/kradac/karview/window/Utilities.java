@@ -20,9 +20,11 @@ import java.util.regex.Pattern;
 
 /**
  *
- * @author 
+ * @author
  */
 public class Utilities {
+
+    public static boolean isSKpat = false;
 
     //Directorio Actual
     private static File WORKING_DIRECTORY;
@@ -97,15 +99,21 @@ public class Utilities {
         return encaja.replaceAll("");
     }
 
-  
     /**
      * Transforma un número a formato Hexadecimal
      *
      * @param numHex
      * @return
      */
+    int conHex = 0;
+
     public String convertNumberToHexadecimal(String numHex) {
-        int conHex = Integer.parseInt(numHex);
+        System.out.println(isSKpat);
+        if (isSKpat) {
+            conHex = Integer.parseInt(numHex, 16);
+        } else {
+            conHex = Integer.parseInt(numHex);
+        }
         String binario = Integer.toBinaryString(conHex);
         return completeDigits(binario);
     }
@@ -176,7 +184,7 @@ public class Utilities {
             return objCalNow;
         }
     }
-    
+
     public Calendar dateTimeDisplay(String data) {
         //data = "21082014132310";
         Calendar objCalNow = new GregorianCalendar();
@@ -307,7 +315,7 @@ public class Utilities {
 //        emAux.getTransaction().commit();
 //        emAux.close();
     }
-    
+
     public void executeProcedurePapeletaDespachos(int idVehicle, int idPoint, Date dateTime, double speed) {
 //        EntityManager emAux = Gui.getCpdb().choosePersistenceHistoricOpen().createEntityManager();
 //        emAux.getTransaction().begin();
@@ -321,7 +329,7 @@ public class Utilities {
 //        emAux.getTransaction().commit();
 //        emAux.close();
     }
-    
+
     public void executeProcedureAsignarRutaSkp(int idVehicle, Date dateTime) {
 //        EntityManager emAux = Gui.getCpdb().choosePersistenceHistoricOpen().createEntityManager();
 //        emAux.getTransaction().begin();

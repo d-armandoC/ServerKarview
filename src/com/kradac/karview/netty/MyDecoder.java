@@ -33,7 +33,6 @@ public class MyDecoder extends ByteToMessageDecoder {
                 data += (char) bb.readByte();
             }
             bb.clear();
-
             if (data.contains("OK") || data.contains("handshake")) {
                 if (data.contains("handshake")) {
                     chc.channel().write("0%%at");
@@ -46,26 +45,18 @@ public class MyDecoder extends ByteToMessageDecoder {
                 chc.channel().disconnect();
             }
         }
-
         if (bb.readableBytes() < length - 2) {
             bb.resetReaderIndex();
             return;
         }
-//            bb.readBytes(length - 2).array();
         in.writeBytes(bb);
         in.discardReadBytes();
         in.retain();
         list.add(in);
-//         list.add(bb.readBytes(length - 2));
-
+        bb.clear();
     }
 
-    protected void bypass(ByteBuf bb, List<Object> out) {
-        in.writeBytes(bb);
-        in.discardReadBytes();
-        in.retain();
-        out.add(in);
-    }
+
 //    
 
 //    @Override
