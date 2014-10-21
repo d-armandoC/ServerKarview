@@ -126,10 +126,10 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             System.out.println("Trama Conexion SKP: [" + auxdata + "]");
             u.sendToFile(3, "skp", this.data);
             processConnectionData(u.clearDataConnection(this.data));
-        } //        else if (auxdata.indexOf("0150") == 0) {
-        //            System.out.println("Respuesta Cmd: [" + auxdata + "]");
-        //            //processResponseComand(this.data.substring(5));
-        //        } 
+        }      else if (auxdata.indexOf("0150") == 0) {
+                    System.out.println("Respuesta Cmd: [" + auxdata + "]");
+//                    processResponseComand(this.data.substring(5));
+                } 
         else if (auxdata.indexOf("0420") == 0) {
             System.out.println("Trama SKP: [" + data + "]");
             u.sendToFile(3, "skp", this.data);
@@ -183,7 +183,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
     }
 
     private void processConnectionData(String device) {
-        System.out.println("Equipo  "+ device);
              e = ejc.findEquiposByEquipo(device);
             if (e == null) {
                 auxDevice = device;
