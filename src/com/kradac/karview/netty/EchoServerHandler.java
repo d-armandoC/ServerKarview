@@ -117,31 +117,29 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         this.data = auxdata;
         buf.clear();
         System.out.println("Trama Actual: " + data);
-
         if (auxdata.indexOf("0@8000001") == 0) {
             System.out.println("Trama Conexion SKP+: [" + auxdata + "]");
             u.sendToFile(2, "skp+", this.data);
-            processConnectionData(u.clearDataConnection(this.data));
+            tramaConecxion(u.clearDataConnection(this.data));
         } else if (auxdata.indexOf("0@80") == 0) {
             System.out.println("Trama Conexion SKP: [" + auxdata + "]");
             u.sendToFile(3, "skp", this.data);
-            processConnectionData(u.clearDataConnection(this.data));
-        }      else if (auxdata.indexOf("0150") == 0) {
-                    System.out.println("Respuesta Cmd: [" + auxdata + "]");
+            tramaConecxion(u.clearDataConnection(this.data));
+        } else if (auxdata.indexOf("0150") == 0) {
+            System.out.println("Respuesta Cmd: [" + auxdata + "]");
 //                    processResponseComand(this.data.substring(5));
-                } 
-        else if (auxdata.indexOf("0420") == 0) {
+        } else if (auxdata.indexOf("0420") == 0) {
             System.out.println("Trama SKP: [" + data + "]");
             u.sendToFile(3, "skp", this.data);
             procesarSKP(this.data);
         } else if (auxdata.indexOf("0@8488") == 0) { // 0@8488ￌ
             System.out.println("Trama SKP+ -param: [" + auxdata + "]");
             u.sendToFile(3, "skp", this.data);
-            processDataNormal(this.data.substring(9));
+            tramaMinuto(this.data.substring(9));
         } else if (auxdata.indexOf("0@80") == 0) {
             System.out.println("Trama SKP+ +param: [" + auxdata + "]");
-            u.sendToFile(3, "skp", this.data);
-            processDataNormal(this.data.substring(9));
+            u.sendToFile(3, "skp+", this.data);
+            tramaMinuto(this.data.substring(9));
         } else {
             System.err.println("Trama sin Procesar: [" + auxdata + "]");
             if (registered) {
@@ -164,7 +162,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        System.out.println("exception");
 //         Close the connection when an exception is raised.
         if (cause.toString().equals("io.netty.handler.timeout.ReadTimeoutException")) {
             dijc.create(new DatoInvalidos(7, new Date(), e.getEquipo(), this.data, cause.toString()));
@@ -182,16 +179,16 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         ctx.close();
     }
 
-    private void processConnectionData(String device) {
-             e = ejc.findEquiposByEquipo(device);
+    private void tramaConecxion(String device) {
+        if (!registered) {
+            e = ejc.findEquiposByEquipo(device);
             if (e == null) {
                 auxDevice = device;
                 System.out.println("Dato Enviado a Tabla de Invalidos por no estar registrado en el sistema [" + auxDevice + "].");
                 dijc.create(new DatoInvalidos(3, new Date(), auxDevice, this.data, ""));
             } else {
-//                registered = true;
+                registered = true;
                 uds = udsjc.findUltimoDatoSkpsByIdEquipo(e.getIdEquipo());
-                System.out.println(e.getEquipo());
                 v = vjc.findVehiculosByEquipo(e.getEquipo());
                 if (v == null) {
                     System.out.println("No hay vehiculo asociado al Equipo [" + e.getEquipo() + "]");
@@ -212,27 +209,23 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         dijc.create(new DatoInvalidos(2, new Date(), e.getEquipo(), this.data, ex.getMessage()));
                     }
                 }
-                processSendComand();
+//                processSendComand();
+            }
         }
     }
 
-    private void processDataNormal(String trama) {
-        System.out.println("Proceso Trama Normal");
+    private void tramaMinuto(String trama) {
         String[] dataTrama = trama.split(",");
         Calendar objCalDevice = u.validateDate(dataTrama[9], dataTrama[1].substring(0, dataTrama[1].lastIndexOf('.')), true);
         if (objCalDevice != null) {
             boolean haveSpace = true;
             String header = dataTrama[0].trim();
-
             while (haveSpace) {
                 header = header.replace("  ", " ");
                 haveSpace = header.contains("  ");
             }
-
             String dataHeader[] = header.split(" ");
-
             String gpio;
-
             if (dataHeader.length == 6 || dataHeader.length == 5) {
                 se = sejc.findSkyEventosByParametro(Short.parseShort(dataHeader[0]));
                 if (!registered) {
@@ -247,7 +240,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         auxDevice = dataHeader[1];
                     }
                 }
-                System.out.println("gpio:" + dataHeader[2] + "::::");
                 gpio = u.convertNumberToHexadecimal(dataHeader[2]);
 //                p = pjc.findPuntosByGeocercaSkp(dataHeader[3]);
 //                if (dataHeader.length == 5) {
@@ -288,7 +280,46 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         se = sejc.findSkyEventos(12);
                     }
                 }
-
+                uds = udsjc.findUltimoDatoSkpsByIdEquipo(e.getIdEquipo());
+                if (uds != null) {
+                    try {
+//public UltimoDatoSkps(Date fechaHoraConex, Date fechaHoraUltDato, double latitud, double longitud, 
+                        //double velocidad, double rumbo, short g1, short g2, short sal, short bateria, short v1, short v2, short gsm, 
+                        //short gps, short ign, String direccion, int cantidadPasajeros, Equipos idEquipo, SkyEventos idSkyEvento)
+                        uds.setFechaHoraConex(new Date());
+                        uds.setFechaHoraUltDato(new Date());
+                        uds.setLatitud(latitud);
+                        uds.setLongitud(longitud);
+                        uds.setVelocidad(speed);
+                        uds.setRumbo(course);
+                        uds.setG1(Short.parseShort("" + gpio.charAt(8)));
+                        uds.setG2(Short.parseShort("" + gpio.charAt(7)));
+                        uds.setSal(Short.parseShort("" + gpio.charAt(6)));
+                        uds.setBateria(Short.parseShort("" + gpio.charAt(5)));
+                        uds.setV1(Short.parseShort("" + gpio.charAt(4)));
+                        uds.setV2(Short.parseShort("" + gpio.charAt(3)));
+                        uds.setGsm(Short.parseShort("" + gpio.charAt(2)));
+                        uds.setGps(Short.parseShort("" + gpio.charAt(1)));
+                        uds.setIgn(Short.parseShort("" + gpio.charAt(0)));
+                        uds.setDireccion("");
+                        uds.setIdEquipo(e);
+                        uds.setIdSkyEvento(se);
+                        udsjc.edit(uds);
+//                        udsjc.edit(new UltimoDatoSkps(new Date(), new Date(), latitud, longitud, speed, course,
+//                                Short.parseShort("" + gpio.charAt(8)),
+//                                Short.parseShort("" + gpio.charAt(7)),
+//                                Short.parseShort("" + gpio.charAt(6)),
+//                                Short.parseShort("" + gpio.charAt(5)),
+//                                Short.parseShort("" + gpio.charAt(4)),
+//                                Short.parseShort("" + gpio.charAt(3)),
+//                                Short.parseShort("" + gpio.charAt(2)),
+//                                Short.parseShort("" + gpio.charAt(1)),
+//                                Short.parseShort("" + gpio.charAt(0)), "", 0,
+//                                e, se));
+                    } catch (Exception e) {
+                        System.out.println("Mesaje excepcion" + e.getMessage());
+                    }
+                }
                 try {
                     dsjc.create(new DatoSpks(new DatoSpksPK(e.getIdEquipo(), objCalDevice.getTime(), objCalDevice.getTime(), se.getIdSkyEvento()), new Date(), latitud, longitud, speed, course,
                             Short.parseShort("" + gpio.charAt(8)),
@@ -327,8 +358,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
     }
 
     private void procesarSKP(String trama) {
-        
-        
         String[] dataTrama = trama.split(",");
         Calendar objCalDevice = u.validateDate(dataTrama[10], dataTrama[2].substring(0, dataTrama[2].lastIndexOf('.')), true);
         if (objCalDevice != null) {
@@ -336,7 +365,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             String header = dataTrama[0].trim();
             String gpiodat = dataTrama[1].trim();
             String gpiodata[] = gpiodat.split(" ");
-            
 
             while (haveSpace) {
                 header = header.replace("  ", " ");
@@ -346,6 +374,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             String dataHeader[] = header.split(" ");
             String gpio;
             if (dataHeader.length == 3 || dataHeader.length == 4) {
+
                 se = sejc.findSkyEventosByParametro(Short.parseShort(dataHeader[1].substring(0, 1)));
                 if (!registered) {
                     e = ejc.findEquiposByEquipo(dataHeader[1].substring(1, dataHeader[1].length()));
@@ -359,9 +388,9 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         auxDevice = dataHeader[1];
                     }
                 }
-                Utilities.isSKpat=true;
+                Utilities.isSKpat = true;
                 gpio = u.convertNumberToHexadecimal(gpiodata[0]);
-                Utilities.isSKpat=false;
+                Utilities.isSKpat = false;
 //                p = pjc.findPuntosByGeocercaSkp(dataHeader[3]);
 //                if (dataHeader.length == 5) {
 //                    p = pjc.findPuntosByGeocercaSkp("FFFF");
@@ -382,10 +411,8 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                     }
                 }
 
-               gpio = u.convertNumberToHexadecimal(gpiodata[0]);
+                gpio = u.convertNumberToHexadecimal(gpiodata[0]);
                 se = sejc.findSkyEventosByEvento(Short.parseShort(dataHeader[1].substring(0, 1)));
-                System.out.println("Eky Evento:  "+se);
-                System.out.println("se" + se);
                 if (se == null) {
                     se = sejc.findSkyEventos(1);
                 }

@@ -6,6 +6,9 @@
 package com.kradac.karview.window;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -108,7 +111,6 @@ public class Utilities {
     int conHex = 0;
 
     public String convertNumberToHexadecimal(String numHex) {
-        System.out.println(isSKpat);
         if (isSKpat) {
             conHex = Integer.parseInt(numHex, 16);
         } else {
@@ -284,25 +286,25 @@ public class Utilities {
     }
 
     public void sendToFile(int typeData, String type, String data) {
-//        FileWriter f = null;
-//        try {
-//            String dateNow = formatoFechaSave.format(new Date());
-//            String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-//            f = new FileWriter(Gui.getCpdb().getPath() + type + "_" + dateNow + ".txt", true);
-//            PrintWriter pw = new PrintWriter(f);
-//            pw.println("[" + typeData + "][" + now + "][" + data + "]");
-//
-//        } catch (IOException ex) {
-//            System.out.println("Falla o Interrumpcion en Operationes I/O [" + ex.getMessage() + "].");
-//        } finally {
-//            try {
-//                if (f != null) {
-//                    f.close();
-//                }
-//            } catch (IOException ex) {
-//                System.out.println("Falla o Interrumpcion en Operationes I/O [" + ex.getMessage() + "].");
-//            }
-//        }
+        FileWriter f = null;
+        try {
+            String dateNow = formatoFechaSave.format(new Date());
+            String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+            f = new FileWriter(Gui.getCpdb().getPath() + type + "_" + dateNow + ".txt", true);
+            PrintWriter pw = new PrintWriter(f);
+            pw.println("[" + typeData + "][" + now + "][" + data + "]");
+            System.out.println("Log Registrado");
+        } catch (IOException ex) {
+            System.out.println("Falla o Interrumpcion en Operationes I/O [" + ex.getMessage() + "].");
+        } finally {
+            try {
+                if (f != null) {
+                    f.close();
+                }
+            } catch (IOException ex) {
+                System.out.println("Falla o Interrumpcion en Operationes I/O [" + ex.getMessage() + "].");
+            }
+        }
     }
 
     public void executeProcedureExcesoVelocidades(int idVehicle, double speed) {

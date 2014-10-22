@@ -104,6 +104,8 @@ public class UltimoDatoSkpsJpaController implements Serializable {
                 idSkyEventoNew = em.merge(idSkyEventoNew);
             }
             em.getTransaction().commit();
+            System.out.println("Actualizando Ultimos datos...............");
+            
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
