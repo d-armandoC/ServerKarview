@@ -271,7 +271,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                 double longitud = u.convertLatLonSkp(dataTrama[5], dataTrama[6]);
                 double speed = Math.rint(Double.parseDouble(dataTrama[7]) * 1.85 * 100) / 100;
                 double course = Double.parseDouble(dataTrama[8]);
-
                 if (se.getIdSkyEvento() == 10 || se.getIdSkyEvento() == 11) {
                     if (speed > 90) {
                         se = sejc.findSkyEventos(21);
@@ -283,9 +282,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                 uds = udsjc.findUltimoDatoSkpsByIdEquipo(e.getIdEquipo());
                 if (uds != null) {
                     try {
-//public UltimoDatoSkps(Date fechaHoraConex, Date fechaHoraUltDato, double latitud, double longitud, 
-                        //double velocidad, double rumbo, short g1, short g2, short sal, short bateria, short v1, short v2, short gsm, 
-                        //short gps, short ign, String direccion, int cantidadPasajeros, Equipos idEquipo, SkyEventos idSkyEvento)
                         uds.setFechaHoraConex(new Date());
                         uds.setFechaHoraUltDato(new Date());
                         uds.setLatitud(latitud);
@@ -305,19 +301,8 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         uds.setIdEquipo(e);
                         uds.setIdSkyEvento(se);
                         udsjc.edit(uds);
-//                        udsjc.edit(new UltimoDatoSkps(new Date(), new Date(), latitud, longitud, speed, course,
-//                                Short.parseShort("" + gpio.charAt(8)),
-//                                Short.parseShort("" + gpio.charAt(7)),
-//                                Short.parseShort("" + gpio.charAt(6)),
-//                                Short.parseShort("" + gpio.charAt(5)),
-//                                Short.parseShort("" + gpio.charAt(4)),
-//                                Short.parseShort("" + gpio.charAt(3)),
-//                                Short.parseShort("" + gpio.charAt(2)),
-//                                Short.parseShort("" + gpio.charAt(1)),
-//                                Short.parseShort("" + gpio.charAt(0)), "", 0,
-//                                e, se));
                     } catch (Exception e) {
-                        System.out.println("Mesaje excepcion" + e.getMessage());
+                        System.out.println("Problemas con el Objeto" + e.getMessage());
                     }
                 }
                 try {
@@ -431,6 +416,32 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                     }
                     if (speed > 60) {
                         se = sejc.findSkyEventos(12);
+                    }
+                }
+                   uds = udsjc.findUltimoDatoSkpsByIdEquipo(e.getIdEquipo());
+                if (uds != null) {
+                    try {
+                        uds.setFechaHoraConex(new Date());
+                        uds.setFechaHoraUltDato(new Date());
+                        uds.setLatitud(latitud);
+                        uds.setLongitud(longitud);
+                        uds.setVelocidad(speed);
+                        uds.setRumbo(course);
+                        uds.setG1(Short.parseShort("" + gpio.charAt(8)));
+                        uds.setG2(Short.parseShort("" + gpio.charAt(7)));
+                        uds.setSal(Short.parseShort("" + gpio.charAt(6)));
+                        uds.setBateria(Short.parseShort("" + gpio.charAt(5)));
+                        uds.setV1(Short.parseShort("" + gpio.charAt(4)));
+                        uds.setV2(Short.parseShort("" + gpio.charAt(3)));
+                        uds.setGsm(Short.parseShort("" + gpio.charAt(2)));
+                        uds.setGps(Short.parseShort("" + gpio.charAt(1)));
+                        uds.setIgn(Short.parseShort("" + gpio.charAt(0)));
+                        uds.setDireccion("");
+                        uds.setIdEquipo(e);
+                        uds.setIdSkyEvento(se);
+                        udsjc.edit(uds);
+                    } catch (Exception e) {
+                        System.out.println("Problemas con el Pojo" + e.getMessage());
                     }
                 }
                 try {

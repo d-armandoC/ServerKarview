@@ -293,7 +293,6 @@ public class Utilities {
             f = new FileWriter(Gui.getCpdb().getPath() + type + "_" + dateNow + ".txt", true);
             PrintWriter pw = new PrintWriter(f);
             pw.println("[" + typeData + "][" + now + "][" + data + "]");
-            System.out.println("Log Registrado");
         } catch (IOException ex) {
             System.out.println("Falla o Interrumpcion en Operationes I/O [" + ex.getMessage() + "].");
         } finally {
