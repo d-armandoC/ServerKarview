@@ -15,6 +15,8 @@ import com.kradac.karview.entities.controllers.DatoInvalidosJpaController;
 import com.kradac.karview.entities.controllers.DatoSpksJpaController;
 import com.kradac.karview.entities.controllers.EnvioCorreosJpaController;
 import com.kradac.karview.entities.controllers.EquiposJpaController;
+import com.kradac.karview.entities.controllers.GeocercaPuntosJpaController;
+import com.kradac.karview.entities.controllers.GeocercaVehiculosJpaController;
 import com.kradac.karview.entities.controllers.SkyEventosJpaController;
 import com.kradac.karview.entities.controllers.UltimoDatoSkpsJpaController;
 import com.kradac.karview.entities.controllers.VehiculosJpaController;
@@ -24,6 +26,11 @@ import com.kradac.karview.entities.historic.Comandos;
 import com.kradac.karview.entities.historic.DatoInvalidos;
 import com.kradac.karview.entities.historic.DatoSpks;
 import com.kradac.karview.entities.historic.DatoSpksPK;
+import com.kradac.karview.entities.logic.GeocercaPuntos;
+import com.kradac.karview.entities.logic.GeocercaPuntosPK;
+import com.kradac.karview.entities.logic.GeocercaVehiculos;
+import com.kradac.karview.entities.logic.GeocercaVehiculosPK;
+import com.kradac.karview.entities.logic.Geocercas;
 import com.kradac.karview.mail.AlertaMail;
 import com.kradac.karview.window.Gui;
 import com.kradac.karview.window.Utilities;
@@ -70,6 +77,8 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
     private final DatoSpksJpaController dsjc;
     private final DatoInvalidosJpaController dijc;
     private final ComandosJpaController cjc;
+    private final GeocercaVehiculosJpaController gcvh;
+    private final GeocercaPuntosJpaController gcp;
 
     private Vehiculos v;
     private Equipos e;
@@ -95,6 +104,8 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         this.dsjc = new DatoSpksJpaController(Gui.getCpdb().choosePersistenceHistoricOpen());
         this.dijc = new DatoInvalidosJpaController(Gui.getCpdb().choosePersistenceHistoricOpen());
         this.cjc = new ComandosJpaController(Gui.getCpdb().choosePersistenceHistoricOpen());
+        this.gcvh = new GeocercaVehiculosJpaController(Gui.getCpdb().choosePersistenceLogicOpen());
+        this.gcp = new GeocercaPuntosJpaController(Gui.getCpdb().choosePersistenceLogicOpen());
     }
 
     @Override
@@ -180,6 +191,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
     }
 
     private void tramaConecxion(String device) {
+        System.out.println("Trama conexion");
         if (!registered) {
             e = ejc.findEquiposByEquipo(device);
             if (e == null) {
@@ -209,7 +221,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         dijc.create(new DatoInvalidos(2, new Date(), e.getEquipo(), this.data, ex.getMessage()));
                     }
                 }
-//                processSendComand();
+                processSendComand();
             }
         }
     }
@@ -267,10 +279,12 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             }
 
             if (registered) {
+
                 double latitud = u.convertLatLonSkp(dataTrama[3], dataTrama[4]);
                 double longitud = u.convertLatLonSkp(dataTrama[5], dataTrama[6]);
                 double speed = Math.rint(Double.parseDouble(dataTrama[7]) * 1.85 * 100) / 100;
                 double course = Double.parseDouble(dataTrama[8]);
+//                verificarGeocercas();
                 if (se.getIdSkyEvento() == 10 || se.getIdSkyEvento() == 11) {
                     if (speed > 90) {
                         se = sejc.findSkyEventos(21);
@@ -418,7 +432,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         se = sejc.findSkyEventos(12);
                     }
                 }
-                   uds = udsjc.findUltimoDatoSkpsByIdEquipo(e.getIdEquipo());
+                uds = udsjc.findUltimoDatoSkpsByIdEquipo(e.getIdEquipo());
                 if (uds != null) {
                     try {
                         uds.setFechaHoraConex(new Date());
@@ -441,7 +455,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         uds.setIdSkyEvento(se);
                         udsjc.edit(uds);
                     } catch (Exception e) {
-                        System.out.println("Problemas con el Pojo" + e.getMessage());
+                        System.out.println("Problemas en la asignación de datos al Pojo" + e.getMessage());
                     }
                 }
                 try {
@@ -459,7 +473,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                     if (se.getIdSkyEvento() == 12 || se.getIdSkyEvento() == 21) {
                         u.executeProcedureExcesoVelocidades(v.getIdVehiculo(), speed);
                     }
-//                  sendMails();
+                    sendMails();
                 } catch (PreexistingEntityException ex) {
                     System.out.println("Dato ya Existe [" + this.data + "]");
                     dijc.create(new DatoInvalidos(5, new Date(), e.getEquipo(), this.data));
@@ -505,7 +519,9 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         if (runTimerCmd) {
             if (timeCloseChannel > 0) {
                 timeCloseChannel -= 5;
+                ///Verifico si tiene un comando de envio el equipo que llego en la trama 
                 Comandos cmd = cjc.getComandosToSend(e.getIdEquipo());
+                System.out.println(cmd.getComando());
                 if (cmd != null) {
                     this.c.write(cmd.getComando());
                     cmdSend.add(cmd);
@@ -551,6 +567,41 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                 am.start();
             }
         }
+    }
+
+    public void verificarGeocercas(double lat, double lon, String fechaTrama) {
+        //double lat, double lon, String fechaTrama
+        GeocercaVehiculos lgv = gcvh.findGeocercaVehiculos(vjc.findVehiculosByEquipo(e.getEquipo()).getIdVehiculo());
+        List<GeocercaPuntos> listaPuntos= gcp.listaGeocercaPuntos(lgv.getGeocercaVehiculosPK().getIdGeocerca());
+        if(listaPuntos!=null){
+            for (GeocercaPuntos geocercaPuntos : listaPuntos) {
+                
+              if(Utilities.pnpoly(listaPuntos.size(),datx(listaPuntos), daty(listaPuntos), lat, lon)){
+                  
+                  System.out.println("dentro de la Geocerca");
+              }else{
+              
+                  System.out.println("Fuera de la Geocerca");
+              }
+            }
+        
+        }
+    }
+//    
+    public double[] datx(List<GeocercaPuntos> list){
+       double x[]= new double[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            x[i]=list.get(i).getLatitud();
+        }
+    return x;
+    }
+    
+    public double[] daty(List<GeocercaPuntos> list){
+       double y[]= new double[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            y[i]=list.get(i).getLongitud();
+        }
+    return y;
     }
 
 }

@@ -10,15 +10,17 @@ import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityExcep
 import com.kradac.karview.entities.controllers.exceptions.PreexistingEntityException;
 import com.kradac.karview.entities.logic.GeocercaPuntos;
 import com.kradac.karview.entities.logic.GeocercaPuntosPK;
-import java.io.Serializable;
-import javax.persistence.Query;
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import com.kradac.karview.entities.logic.Geocercas;
+import java.io.Serializable;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.NoResultException;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 /**
  *
@@ -178,4 +180,18 @@ public class GeocercaPuntosJpaController implements Serializable {
         }
     }
     
+    public List<GeocercaPuntos> listaGeocercaPuntos(int idGeocerca){
+         EntityManager em = getEntityManager();
+         try {
+            TypedQuery<GeocercaPuntos> gcp;
+            gcp= em.createQuery("SELECT g FROM GeocercaPuntos g WHERE g.geocercaPuntosPK.idGeocerca = :idGeocerca order by orden", GeocercaPuntos.class);
+            gcp.setParameter("idGeocerca", idGeocerca);
+            return gcp.getResultList();
+        } catch (NoResultException e) {
+                  return null;
+        } finally {
+            em.close();
+        
+        }
+    }
 }

@@ -317,19 +317,19 @@ public class Utilities {
 //        emAux.close();
     }
 
-    public void executeProcedurePapeletaDespachos(int idVehicle, int idPoint, Date dateTime, double speed) {
-//        EntityManager emAux = Gui.getCpdb().choosePersistenceHistoricOpen().createEntityManager();
-//        emAux.getTransaction().begin();
-//        Query q = emAux.createNativeQuery("call sp_papeleta_despachos(?, -1, ?, ?, ?, ?, -1, 0)");
-//        q.setParameter(1, idVehicle);
-//        q.setParameter(2, idPoint);
-//        q.setParameter(3, dateTime);
-//        q.setParameter(4, dateTime);
-//        q.setParameter(5, speed);
-//        q.executeUpdate();
-//        emAux.getTransaction().commit();
-//        emAux.close();
-    }
+//    public void executeProcedurePapeletaDespachos(int idVehicle, int idPoint, Date dateTime, double speed) {
+////        EntityManager emAux = Gui.getCpdb().choosePersistenceHistoricOpen().createEntityManager();
+////        emAux.getTransaction().begin();
+////        Query q = emAux.createNativeQuery("call sp_papeleta_despachos(?, -1, ?, ?, ?, ?, -1, 0)");
+////        q.setParameter(1, idVehicle);
+////        q.setParameter(2, idPoint);
+////        q.setParameter(3, dateTime);
+////        q.setParameter(4, dateTime);
+////        q.setParameter(5, speed);
+////        q.executeUpdate();
+////        emAux.getTransaction().commit();
+////        emAux.close();
+//    }
 
     public void executeProcedureAsignarRutaSkp(int idVehicle, Date dateTime) {
 //        EntityManager emAux = Gui.getCpdb().choosePersistenceHistoricOpen().createEntityManager();
@@ -341,4 +341,21 @@ public class Utilities {
 //        emAux.getTransaction().commit();
 //        emAux.close();
     }
+    
+    
+    
+     public static boolean pnpoly(int nvert, double[] vertx, double[] verty, double testx, double testy) {        
+        int i, j;
+        boolean c = false;
+        for (i = 0, j = nvert - 1; i < nvert; j = i++) {
+            if (((verty[i] > testy) != (verty[j] > testy)) && (testx < (vertx[j] - vertx[i])
+                    * (testy - verty[i])
+                    / (verty[j] - verty[i])
+                    + vertx[i])) {
+                c = !c;
+            }
+        }
+        return c;
+    }
+    
 }

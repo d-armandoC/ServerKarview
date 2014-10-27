@@ -154,18 +154,14 @@ public class ComandosJpaController implements Serializable {
             List<Comandos> lc;
             Comandos c = null;
             TypedQuery<Comandos> qry;
-            
             qry = em.createQuery("SELECT c FROM Comandos c WHERE c.comandosPK.idEquipo = :idEquipo AND c.idTipoEstadoCmd = :idTipoEstadoCmd AND DATE(c.comandosPK.fechaHoraRegistro) = DATE(NOW())", Comandos.class);
             qry.setParameter("idEquipo", idEquipo);
             qry.setParameter("idTipoEstadoCmd", 1);
-            
             lc = qry.getResultList();
-            
             for (Comandos comandos : lc) {
                 c = comandos;
                 break;
             }
-            
             return c;
         } catch (NoResultException e) {
             return null;

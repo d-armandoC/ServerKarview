@@ -34,28 +34,13 @@
   </persistence-unit>
   <persistence-unit name="ServerKarviewPU2" transaction-type="RESOURCE_LOCAL">
     <provider>org.hibernate.ejb.HibernatePersistence</provider>
-    <class>com.kradac.karview.entities.logic.ClaseVehiculos</class>
-    <class>com.kradac.karview.entities.logic.CmdPredefinidos</class>
-    <class>com.kradac.karview.entities.logic.Configuraciones</class>
-    <class>com.kradac.karview.entities.logic.Empresas</class>
-    <class>com.kradac.karview.entities.logic.EnvioCorreos</class>
-    <class>com.kradac.karview.entities.logic.EnvioGeoCorreos</class>
-    <class>com.kradac.karview.entities.logic.Equipos</class>
-    <class>com.kradac.karview.entities.logic.EstandarVehiculos</class>
-    <class>com.kradac.karview.entities.logic.Generos</class>
-    <class>com.kradac.karview.entities.logic.GeocercaPuntos</class>
-    <class>com.kradac.karview.entities.logic.GeocercaVehiculos</class>
-    <class>com.kradac.karview.entities.logic.Geocercas</class>
-    <class>com.kradac.karview.entities.logic.Mantenimiento</class>
-    <class>com.kradac.karview.entities.logic.Personas</class>
-    <class>com.kradac.karview.entities.logic.RolUsuarios</class>
-    <class>com.kradac.karview.entities.logic.SkyEventos</class>
-    <class>com.kradac.karview.entities.logic.TipoDatoInvalidos</class>
-    <class>com.kradac.karview.entities.logic.TipoEquipos</class>
-    <class>com.kradac.karview.entities.logic.TipoEstadoCmds</class>
-    <class>com.kradac.karview.entities.logic.UltimoDatoSkps</class>
-    <class>com.kradac.karview.entities.logic.Usuarios</class>
-    <class>com.kradac.karview.entities.logic.Vehiculos</class>
+    <class>com.kradac.karview.entities.historic.Accesos</class>
+    <class>com.kradac.karview.entities.historic.Comandos</class>
+    <class>com.kradac.karview.entities.historic.ComentarioEquipos</class>
+    <class>com.kradac.karview.entities.historic.ComentarioVehiculos</class>
+    <class>com.kradac.karview.entities.historic.DatoInvalidos</class>
+    <class>com.kradac.karview.entities.historic.DatoSpks</class>
+    <class>com.kradac.karview.entities.historic.HistorialGeocercas</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/karviewhistoricodb?zeroDateTimeBehavior=convertToNull"/>
       <property name="javax.persistence.jdbc.user" value="root"/>

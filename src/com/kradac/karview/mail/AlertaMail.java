@@ -30,17 +30,9 @@ public class AlertaMail extends Thread {
      * @param mailPara
      * @param nombre
      */
-    public AlertaMail(String station,
-            String tipoSen,
-            String valor,
-            double parMin,
-            double parMax,
-            String mailPara,
-            String nombre) {
-
+    public AlertaMail(String station,String tipoSen,String valor,double parMin,double parMax,String mailPara,String nombre) {
         this.mailPara = mailPara;
         this.titulo = "Alerta!!! Sensor [" + tipoSen + ": " + valor + "] : " + station + " : " + Utilities.getDate() + " " + Utilities.getTime();
-
         mensaje = new StringBuilder();
         mensaje.append(nombre).append(",<br><br>");
         mensaje.append("Le informamos que hay un sensor fuera de los limites permitidos:<br><br>");
@@ -58,7 +50,6 @@ public class AlertaMail extends Thread {
     public AlertaMail(String station, String mailPara, String event, String message, String person) {
         this.mailPara = mailPara;
         this.titulo = "Alerta!!! Evento [" + event + "] : " + Utilities.getDate() + " " + Utilities.getTime();
-
         mensaje = new StringBuilder();
         mensaje.append(person).append(",<br><br>");
         mensaje.append("Le informamos que se ha producido un evento.<br><br>");

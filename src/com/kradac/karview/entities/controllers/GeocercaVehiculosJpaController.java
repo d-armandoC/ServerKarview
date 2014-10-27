@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.kradac.karview.entities.controllers;
 
 import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
@@ -16,9 +15,12 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.kradac.karview.entities.logic.Geocercas;
+import com.kradac.karview.entities.logic.Vehiculos;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -165,6 +167,21 @@ public class GeocercaVehiculosJpaController implements Serializable {
         }
     }
 
+     public GeocercaVehiculos findGeocercaVehiculos(int idVehiculo) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<GeocercaVehiculos> qry;
+            qry = em.createQuery("SELECT gv FROM GeocercaVehiculos gv WHERE gv.geocercaVehiculosPK.idVehiculo = :idVehiculo", GeocercaVehiculos.class);
+            qry.setParameter("idVehiculo", idVehiculo);
+            return qry.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } finally {
+            em.close();
+        }
+    }
+
+
     public int getGeocercaVehiculosCount() {
         EntityManager em = getEntityManager();
         try {
@@ -177,5 +194,5 @@ public class GeocercaVehiculosJpaController implements Serializable {
             em.close();
         }
     }
-    
+
 }
