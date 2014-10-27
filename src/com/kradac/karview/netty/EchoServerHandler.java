@@ -263,10 +263,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                     }
                 }
                 gpio = u.convertNumberToHexadecimal(dataHeader[2]);
-//                p = pjc.findPuntosByGeocercaSkp(dataHeader[3]);
-//                if (dataHeader.length == 5) {
-//                    p = pjc.findPuntosByGeocercaSkp("FFFF");
-//                }
             } else {
                 if (!registered) {
                     e = ejc.findEquiposByEquipo(dataHeader[0]);
@@ -285,16 +281,12 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                 if (se == null) {
                     se = sejc.findSkyEventos(1);
                 }
-//                p = pjc.findPuntosByGeocercaSkp("FFFF");
             }
-
             if (registered) {
-
                 double latitud = u.convertLatLonSkp(dataTrama[3], dataTrama[4]);
                 double longitud = u.convertLatLonSkp(dataTrama[5], dataTrama[6]);
                 double speed = Math.rint(Double.parseDouble(dataTrama[7]) * 1.85 * 100) / 100;
                 double course = Double.parseDouble(dataTrama[8]);
-
                 if (se.getIdSkyEvento() == 10 || se.getIdSkyEvento() == 11) {
                     if (speed > 90) {
                         se = sejc.findSkyEventos(21);
@@ -344,11 +336,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                     if (se.getIdSkyEvento() == 12 || se.getIdSkyEvento() == 21) {
                         u.executeProcedureExcesoVelocidades(v.getIdVehiculo(), speed);
                     }
-//                    if (p.getIdPunto() > 1) {
-//                        u.executeProcedurePapeletaDespachos(v.getIdVehiculo(), p.getIdPunto(), objCalDevice.getTime(), speed);
-//                    }
-//                    u.executeProcedureAsignarRutaSkp(v.getIdVehiculo(), objCalDevice.getTime());
-//                    sendMails();
+                    sendMails();
                     verificarGeocercas(latitud, longitud);
                 } catch (PreexistingEntityException ex) {
                     System.out.println("Dato ya Existe [" + this.data + "]");
@@ -401,10 +389,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                 Utilities.isSKpat = true;
                 gpio = u.convertNumberToHexadecimal(gpiodata[0]);
                 Utilities.isSKpat = false;
-//                p = pjc.findPuntosByGeocercaSkp(dataHeader[3]);
-//                if (dataHeader.length == 5) {
-//                    p = pjc.findPuntosByGeocercaSkp("FFFF");
-//                }
             } else {
 
                 if (!registered) {
@@ -426,11 +410,8 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                 if (se == null) {
                     se = sejc.findSkyEventos(1);
                 }
-//                p = pjc.findPuntosByGeocercaSkp("FFFF");
             }
-
             if (registered) {
-
                 double latitud = u.convertLatLonSkp(dataTrama[2], dataTrama[3]);
                 double longitud = u.convertLatLonSkp(dataTrama[4], dataTrama[5]);
                 double speed = Math.rint(Double.parseDouble(dataTrama[8]) * 1.85 * 100) / 100;
@@ -563,9 +544,9 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         int idV = vh.getIdVehiculo();
         GeocercaVehiculos lgv = gcvh.findGeocercaVehiculos(idV);
         Personas personas = pc.findPersonas(vh.getIdPersona().getIdPersona());
-
         List<GeocercaPuntos> listaPuntos = gcp.listaGeocercaPuntos(lgv.getGeocercaVehiculosPK().getIdGeocerca());
         if (listaPuntos != null) {
+            System.out.println("lista de puntos");
             EstadoGeocerca estG = egc.findEstadoGeocerca(idV);
             if (Utilities.pnpoly(listaPuntos.size(), datx(listaPuntos), daty(listaPuntos), lat, lon)) {
                 if (estG == null) {
@@ -576,7 +557,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                     hgc.create(new HistorialGeocercas(lgv.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 1, new Date()));
                 } else {
                     if (estG.getEstado() == 1) {
-////                        System.out.println("Dentro de la Geocerca");
                         EstadoGeocerca esgc = new EstadoGeocerca();
                         esgc.setIdVehiculo(idV);
                         esgc.setEstado(0);
