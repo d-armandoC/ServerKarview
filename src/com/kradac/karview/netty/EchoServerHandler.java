@@ -201,7 +201,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
     }
 
     private void tramaConecxion(String device) {
-        System.out.println("Trama conexion");
         if (!registered) {
             e = ejc.findEquiposByEquipo(device);
             if (e == null) {
@@ -231,7 +230,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         dijc.create(new DatoInvalidos(2, new Date(), e.getEquipo(), this.data, ex.getMessage()));
                     }
                 }
-                processSendComand();
+//                processSendComand();
             }
         }
     }
