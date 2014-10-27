@@ -504,15 +504,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
 
     private void processResponseComand(String trama) {
         try {
-//            if (smsSend.size() > 0) {
-//                Mensajes sms = smsSend.get(0);
-//                sms.setIdTipoEstadoCmd(3);
-//                sms.setRespuesta(trama.replace(" ", ""));
-//                sms.setFechaHoraRespuesta(new Date());
-//                mjc.edit(sms);
-//                smsSend.remove(0);
-//            }
-
             if (cmdSend.size() > 0) {
                 Comandos cmd = cmdSend.get(0);
                 cmd.setIdTipoEstadoCmd(3);
@@ -544,21 +535,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         System.out.println("Al Editar Envio de Comando: " + ex.getMessage());
                     }
                 }
-
-//                Mensajes sms = mjc.getMensajesToSend(e.getIdEquipo());
-//                if (sms != null) {
-//                    this.c.write("at$ttsndmg=5,\"$$Txt," + sms.getMensaje() + ",:XX##\"");
-//                    smsSend.add(sms);
-//                    sms.setIdTipoEstadoCmd(2);
-//                    sms.setFechaHoraEnvio(new Date());
-//                    try {
-//                        mjc.edit(sms);
-//                    } catch (Exception ex) {
-//                        System.out.println("Al Editar Envio de Comando: " + ex.getMessage());
-//                    }
-//                }
                 this.t.newTimeout(new TimerTask() {
-
                     @Override
                     public void run(Timeout tmt) throws Exception {
                         processSendComand();
