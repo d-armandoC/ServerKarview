@@ -137,7 +137,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         }
         this.data = auxdata;
         buf.clear();
-        System.out.println("Trama Actual: " + data);
         if (auxdata.indexOf("0@8000001") == 0) {
             System.out.println("Trama Conexion SKP+: [" + auxdata + "]");
             u.sendToFile(2, "skp+", this.data);
@@ -367,14 +366,12 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                 header = header.replace("  ", " ");
                 haveSpace = header.contains("  ");
             }
-
             String dataHeader[] = header.split(" ");
             String gpio;
             if (dataHeader.length == 3 || dataHeader.length == 4) {
-
-                se = sejc.findSkyEventosByParametro(Short.parseShort(dataHeader[1].substring(0, 1)));
+                se = sejc.findSkyEventosByParametro(Short.parseShort(gpiodata[1]));
                 if (!registered) {
-                    e = ejc.findEquiposByEquipo(dataHeader[1].substring(1, dataHeader[1].length()));
+                    e = ejc.findEquiposByEquipo(dataHeader[1].substring(0, dataHeader[1].length()));
                     if (e != null) {
                         registered = true;
                         v = vjc.findVehiculosByEquipo(e.getEquipo());
@@ -391,11 +388,10 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             } else {
 
                 if (!registered) {
-                    e = ejc.findEquiposByEquipo(dataHeader[0]);
+                    e = ejc.findEquiposByEquipo(dataHeader[1].substring(0, dataHeader[1].length()));
                     if (e != null) {
                         registered = true;
                         v = vjc.findVehiculosByEquipo(e.getEquipo());
-
                         if (v == null) {
                             System.out.println("No hay vehiculo asociado al Equipo [" + e.getEquipo() + "]");
                         }
@@ -403,8 +399,8 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         auxDevice = dataHeader[0];
                     }
                 }
-
                 gpio = u.convertNumberToHexadecimal(gpiodata[0]);
+                System.out.println(Short.parseShort(dataHeader[1].substring(0, 1)));
                 se = sejc.findSkyEventosByEvento(Short.parseShort(dataHeader[1].substring(0, 1)));
                 if (se == null) {
                     se = sejc.findSkyEventos(1);
@@ -464,7 +460,8 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                     if (se.getIdSkyEvento() == 12 || se.getIdSkyEvento() == 21) {
                         u.executeProcedureExcesoVelocidades(v.getIdVehiculo(), speed);
                     }
-//                    sendMails();
+                    sendMails();
+                    verificarGeocercas(latitud, longitud);
                 } catch (PreexistingEntityException ex) {
                     System.out.println("Dato ya Existe [" + this.data + "]");
                     dijc.create(new DatoInvalidos(5, new Date(), e.getEquipo(), this.data));
@@ -566,7 +563,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                             hgc.create(new HistorialGeocercas(lgv.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 1, new Date()));
                         } else {
                             System.out.println("El Propietario de el equipo: " + e.getEquipo() + " no Cuenta con Correo para el Informe de Geocerca");
-                             hgc.create(new HistorialGeocercas(lgv.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 1, new Date()));
+                            hgc.create(new HistorialGeocercas(lgv.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 1, new Date()));
                         }
 
                     }

@@ -21,7 +21,6 @@ public class MyDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext chc, ByteBuf bb, List<Object> list) throws Exception {
-
         if (bb.readableBytes() < 2) {
             return;
         }
