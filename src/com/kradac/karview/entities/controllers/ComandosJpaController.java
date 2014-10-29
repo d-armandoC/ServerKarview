@@ -11,12 +11,14 @@ import com.kradac.karview.entities.controllers.exceptions.PreexistingEntityExcep
 import com.kradac.karview.entities.historic.Comandos;
 import com.kradac.karview.entities.historic.ComandosPK;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -147,8 +149,8 @@ public class ComandosJpaController implements Serializable {
             em.close();
         }
     }
-    
-       public Comandos getComandosToSend(int idEquipo) {
+
+    public Comandos getComandosToSend(int idEquipo) {
         EntityManager em = getEntityManager();
         try {
             List<Comandos> lc;

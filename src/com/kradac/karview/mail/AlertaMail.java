@@ -30,6 +30,8 @@ public class AlertaMail extends Thread {
      * @param mailPara
      * @param nombre
      */
+    
+    
     public AlertaMail(String station,String tipoSen,String valor,double parMin,double parMax,String mailPara,String nombre) {
         this.mailPara = mailPara;
         this.titulo = "Alerta!!! Sensor [" + tipoSen + ": " + valor + "] : " + station + " : " + Utilities.getDate() + " " + Utilities.getTime();
@@ -47,13 +49,31 @@ public class AlertaMail extends Thread {
         mensaje.append(firm);
     }
 
-    public AlertaMail(String station, String mailPara, String event, String message, String person) {
+    ///Constructor para el envio de eventos
+    public AlertaMail(String equipo, String mailPara, String event, String message, String person) {
         this.mailPara = mailPara;
         this.titulo = "Alerta!!! Evento [" + event + "] : " + Utilities.getDate() + " " + Utilities.getTime();
         mensaje = new StringBuilder();
         mensaje.append(person).append(",<br><br>");
         mensaje.append("Le informamos que se ha producido un evento.<br><br>");
-        mensaje.append("<b>Vehiculo: </b>").append(station).append("<br>");
+        mensaje.append("<b>Vehiculo: </b>").append(equipo).append("<br>");
+
+        mensaje.append("<b>Mensaje:<b><br>");
+        mensaje.append(message);
+
+        mensaje.append("<br><br>Fecha: ").append(Utilities.getDate());
+        mensaje.append("<br>Hora: ").append(Utilities.getTime()).append("<br><br><br>");
+        mensaje.append(firm);
+    }
+    
+    ///Constructor para el envio de Geocercas
+    public AlertaMail(String equipo, String mailPara, String estadoGEocerca, String message, String person, String tipoServicio) {
+        this.mailPara = mailPara;
+        this.titulo = "Alerta!!! Evento de Geocerca [" + estadoGEocerca + "] : " + Utilities.getDate() + " " + Utilities.getTime();
+        mensaje = new StringBuilder();
+        mensaje.append(person).append(",<br><br>");
+        mensaje.append("Le informamos que su Vehículo a ejcutado la Siguiente Acción.<br><br>");
+        mensaje.append("<b>Vehiculo: </b>").append(equipo).append("<br>");
 
         mensaje.append("<b>Mensaje:<b><br>");
         mensaje.append(message);
