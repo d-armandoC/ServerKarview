@@ -17,8 +17,7 @@ import java.util.List;
  */
 public class MyDecoder extends ByteToMessageDecoder {
 
-    private ByteBuf in = Unpooled.buffer();
-
+    private final ByteBuf in = Unpooled.buffer();
     @Override
     protected void decode(ChannelHandlerContext chc, ByteBuf bb, List<Object> list) throws Exception {
         if (bb.readableBytes() < 2) {

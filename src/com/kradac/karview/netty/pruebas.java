@@ -12,7 +12,7 @@ package com.kradac.karview.netty;
 public class pruebas {
 
     public static void main(String[] args) {
-        String datos = "0420     PT45 D1,DF 12 $GPRMC,022752.00,A,0056.207234,S,07911.093398,W,38.0,62.5,161014,1.4,E,A*330r0420     PT45 D1,DF 12 $GPRMC,022752.00,A,0056.207234,S,07911.093398,W,38.0,62.5,161014,1.4,E,A*33";
+        String datos = "0@80          9     CM10     459  14 GPRMC,215634.00,A,0326.65002,S,07957.58693,W,0.000,0.0,291014,,,A*52    55446007";
         String[] dataTrama = datos.split(",");
         String gpiodat = dataTrama[1].trim();
         String gpiodata[] = gpiodat.split(" ");

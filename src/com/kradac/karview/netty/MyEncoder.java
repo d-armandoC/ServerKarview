@@ -14,6 +14,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
  * @author 
  */
 public class MyEncoder extends MessageToByteEncoder<Object> {
+       @Override
        protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf buf) throws Exception {
         if (msg instanceof String) {
             String msj = String.valueOf(msg);

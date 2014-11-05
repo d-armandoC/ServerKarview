@@ -167,13 +167,13 @@ public class GeocercaVehiculosJpaController implements Serializable {
         }
     }
 
-     public GeocercaVehiculos findGeocercaVehiculos(int idVehiculo) {
+     public List<GeocercaVehiculos> findGeocercaVehiculos(int idVehiculo) {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<GeocercaVehiculos> qry;
             qry = em.createQuery("SELECT gv FROM GeocercaVehiculos gv WHERE gv.geocercaVehiculosPK.idVehiculo = :idVehiculo", GeocercaVehiculos.class);
             qry.setParameter("idVehiculo", idVehiculo);
-            return qry.getSingleResult();
+            return qry.getResultList();
         } catch (NoResultException e) {
             return null;
         } finally {
