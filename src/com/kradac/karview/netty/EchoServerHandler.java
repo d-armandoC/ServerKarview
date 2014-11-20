@@ -269,6 +269,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         auxDevice = dataHeader[1];
                     }
                 }
+                System.out.println("Convertir a Exadecimal"+dataHeader[2]);
                 gpio = u.convertNumberToHexadecimal(dataHeader[2]);
             } else {
                 if (!registered) {
@@ -363,6 +364,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
     }
 
     private void procesarSKP(String trama) {
+        System.out.println("Trama que llega"+trama);
         String[] dataTrama = trama.split(",");
         Calendar objCalDevice = u.validateDate(dataTrama[10], dataTrama[2].substring(0, dataTrama[2].lastIndexOf('.')), true);
         if (objCalDevice != null) {
@@ -370,6 +372,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             String cabezera = dataTrama[0].trim();//0420         9      AS36 D1
             String gpiodat = dataTrama[1].trim();//DF $GPRMC
             String gpiodata[] = gpiodat.split(" ");
+            System.out.println("gpio"+gpiodata[0]);
             while (haveSpace) {
                 cabezera = cabezera.replace("  ", " ");
                 haveSpace = cabezera.contains("  ");
