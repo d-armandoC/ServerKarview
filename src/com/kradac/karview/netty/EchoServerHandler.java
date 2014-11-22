@@ -179,6 +179,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             }
         }
     }
+
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         ctx.flush();
@@ -269,7 +270,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         auxDevice = dataHeader[1];
                     }
                 }
-                System.out.println("Convertir a Exadecimal"+dataHeader[2]);
+                System.out.println("Convertir a Exadecimal" + dataHeader[2]);
                 gpio = u.convertNumberToHexadecimal(dataHeader[2]);
             } else {
                 if (!registered) {
@@ -364,25 +365,36 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
     }
 
     private void procesarSKP(String trama) {
-        System.out.println("Trama que llega"+trama);
         String[] dataTrama = trama.split(",");
         Calendar objCalDevice = u.validateDate(dataTrama[10], dataTrama[2].substring(0, dataTrama[2].lastIndexOf('.')), true);
+        //[0420     PT46 D1],[DE 13 $GPRMC],[015956.00],A,0028.242068,S,07659.012343,W,0.0,0.0,221114,3.1,E,A*39@@   584113010
+//        [0420         0      PT46 D1],[DE  7 $GPRMC],[203018.00],A,0028.222303,S,07659.015655,W,0.0,0.0,181114,3.1,E,A*3B@@   583721760
         if (objCalDevice != null) {
             boolean haveSpace = true;
             String cabezera = dataTrama[0].trim();//0420         9      AS36 D1
             String gpiodat = dataTrama[1].trim();//DF $GPRMC
             String gpiodata[] = gpiodat.split(" ");
-            System.out.println("gpio"+gpiodata[0]);
             while (haveSpace) {
                 cabezera = cabezera.replace("  ", " ");
                 haveSpace = cabezera.contains("  ");
             }
             String dataHeader[] = cabezera.split(" ");
+            
             String gpio;
             if (dataHeader.length == 3 || dataHeader.length == 4) {
-                se = sejc.findSkyEventosByParametro(Short.parseShort(gpiodata[1]));
+                if (dataHeader.length == 3) {
+                    se = sejc.findSkyEventosByParametro(Short.parseShort(dataHeader[0]));
+                } else {
+                    se = sejc.findSkyEventosByParametro(Short.parseShort(dataHeader[1]));
+                }
+
                 if (!registered) {
-                    e = ejc.findEquiposByEquipo(dataHeader[1].substring(0, dataHeader[1].length()));
+                    if (dataHeader.length == 3) {
+                        e = ejc.findEquiposByEquipo(dataHeader[1]);
+                    } else {
+                        e = ejc.findEquiposByEquipo(dataHeader[2]);
+                    }
+
                     if (e != null) {
                         registered = true;
                         v = vjc.findVehiculosByEquipo(e.getEquipo());
@@ -393,9 +405,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         auxDevice = dataHeader[1];
                     }
                 }
-                Utilities.isSKpat = true;
                 gpio = u.convertNumberToHexadecimal(gpiodata[0]);
-                Utilities.isSKpat = false;
             } else {
 
                 if (!registered) {
