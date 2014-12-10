@@ -33,7 +33,6 @@ import com.kradac.karview.entities.historic.HistorialGeocercas;
 import com.kradac.karview.entities.logic.EstadoGeocerca;
 import com.kradac.karview.entities.logic.GeocercaPuntos;
 import com.kradac.karview.entities.logic.GeocercaVehiculos;
-import com.kradac.karview.entities.logic.Personas;
 import com.kradac.karview.mail.AlertaMail;
 import com.kradac.karview.window.Gui;
 import com.kradac.karview.window.Utilities;
@@ -160,7 +159,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         } else if (auxdata.indexOf("0420") == 0) {
             System.out.println("Trama SKP: [" + data + "]");
             u.sendToFile(3, "skp", this.data);
-            procesarSKP(this.data);
+            procesarSKP(this.data.substring(9));
         } else if (auxdata.indexOf("0@8 488") == 0) { // 0@8 488 ￌ
             System.out.println("Trama SKP+ -param: [" + auxdata + "]");
             u.sendToFile(3, "skp", this.data);
@@ -192,16 +191,21 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
 //         Close the connection when an exception is raised.
-        if (cause.toString().equals("io.netty.handler.timeout.ReadTimeoutException")) {
-            dijc.create(new DatoInvalidos(7, new Date(), e.getEquipo(), this.data, cause.toString()));
-        } else if (cause.toString().equals("java.io.IOException: Se ha forzado la interrupción de una conexión existente por el host remoto")
-                || cause.toString().equals("java.io.IOException: An existing connection was forcibly closed by the remote host")) {
-            dijc.create(new DatoInvalidos(8, new Date(), e.getEquipo(), this.data, cause.toString()));
-        } else if (cause.toString().equals("java.io.IOException: Connection reset by peer")) {
-            dijc.create(new DatoInvalidos(9, new Date(), e.getEquipo(), this.data, cause.toString()));
-        } else {
-            dijc.create(new DatoInvalidos(2, new Date(), e.getEquipo(), this.data, cause.toString()));
-            System.out.println("Excepcion TCP Conexión [" + this.data + "] [" + cause.toString() + "]");
+        switch (cause.toString()) {
+            case "io.netty.handler.timeout.ReadTimeoutException":
+                dijc.create(new DatoInvalidos(7, new Date(), e.getEquipo(), this.data, cause.toString()));
+                break;
+            case "java.io.IOException: Se ha forzado la interrupción de una conexión existente por el host remoto":
+            case "java.io.IOException: An existing connection was forcibly closed by the remote host":
+                dijc.create(new DatoInvalidos(8, new Date(), e.getEquipo(), this.data, cause.toString()));
+                break;
+            case "java.io.IOException: Connection reset by peer":
+                dijc.create(new DatoInvalidos(9, new Date(), e.getEquipo(), this.data, cause.toString()));
+                break;
+            default:
+                dijc.create(new DatoInvalidos(2, new Date(), e.getEquipo(), this.data, cause.toString()));
+                System.out.println("Excepcion TCP Conexión [" + this.data + "] [" + cause.toString() + "]");
+                break;
         }
         logger.log(Level.WARNING, "Unexpected exception from downstream.", cause.toString());
         runTimerCmd = false;
@@ -250,17 +254,13 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         if (objCalDevice != null) {
             boolean haveSpace = true;
             String cabezera = dataTrama[0].trim();
-            String gpiodat = dataTrama[1].trim();
-            String gpiodata[] = gpiodat.split(" ");
             while (haveSpace) {
                 cabezera = cabezera.replace("  ", " ");
                 haveSpace = cabezera.contains("  ");
             }
             String dataHeader[] = cabezera.split(" ");
-
-            String gpio = null;
+            String gpio = "";
             if (dataHeader.length == 5) {
-                se = sejc.findSkyEventosByParametro(Short.parseShort(dataHeader[0]));
                 if (!registered) {
                     e = ejc.findEquiposByEquipo(dataHeader[1]);
                     if (e != null) {
@@ -273,32 +273,21 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         auxDevice = dataHeader[1];
                     }
                 }
-                gpio = u.convertNumberToHexadecimal(dataHeader[2]);
-            } else if (dataHeader.length == 6) {
-                if (!registered) {
-                    e = ejc.findEquiposByEquipo(dataHeader[0]);
-                    if (e != null) {
-                        registered = true;
-                        v = vjc.findVehiculosByEquipo(e.getEquipo());
-                        if (v == null) {
-                            System.out.println("No hay vehiculo asociado al Equipo [" + e.getEquipo() + "]");
-                        }
-                    } else {
-                        auxDevice = dataHeader[0];
-                    }
-                }
-                gpio = u.convertNumberToHexadecimal(dataHeader[1]);
-                se = sejc.findSkyEventosByEvento(Short.parseShort(dataHeader[2]));
+                gpio = u.convertNumberToHexadecimal(dataHeader[2], false);
+                se = sejc.findSkyEventosByParametro(Short.parseShort(dataHeader[0]));
                 if (se == null) {
-                    se = sejc.findSkyEventos(1);
+                    System.out.println("No se encuentra el evento en la busqueda por Parametro");
                 }
+            } else {
+                System.out.println("Trama inválida [" + this.data + "]");
+                dijc.create(new DatoInvalidos(5, new Date(), e.getEquipo(), this.data));
             }
             if (registered) {
                 double latitud = u.convertLatLonSkp(dataTrama[3], dataTrama[4]);
                 double longitud = u.convertLatLonSkp(dataTrama[5], dataTrama[6]);
                 double speed = Math.rint(Double.parseDouble(dataTrama[7]) * 1.85 * 100) / 100;
                 double course = Double.parseDouble(dataTrama[8]);
-                if (se.getIdSkyEvento() == 10 || se.getIdSkyEvento() == 11) {
+                if (se.getIdSkyEvento() == 9 || se.getIdSkyEvento() == 10) {
                     if (speed > 90) {
                         se = sejc.findSkyEventos(20);
                     }
@@ -344,90 +333,94 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         if (objCalDevice != null) {
             //Formateamos la Trama
             boolean haveSpace = true;
-            String cabezera = dataTrama[0].trim();//0420         9      AS36 D1
-            String gpiodat = dataTrama[1].trim();//DF $GPRMC
+            String cabezera = dataTrama[0].trim();
+            String gpiodat = dataTrama[1].trim();
             String gpiodata[] = gpiodat.split(" ");
             while (haveSpace) {
                 cabezera = cabezera.replace("  ", " ");
                 haveSpace = cabezera.contains("  ");
             }
             String dataHeader[] = cabezera.split(" ");
-            String gpio = null;
-            Short evento;
-            //Determinamos el tamaño del encabezado en 3 o 4
-            if (dataHeader.length == 3 || dataHeader.length == 4) {
-                // si es 3 obtenemos el evevento en length 3
-                if (dataHeader.length == 3) {
-                    se = sejc.findSkyEventosByParametro(Short.parseShort(gpiodata[1]));
-                    evento = Short.parseShort(gpiodata[1]);
-                } else {
-                    // si es 4 obtenemos el evevento en length 4
-                    se = sejc.findSkyEventosByParametro(Short.parseShort(gpiodata[2]));
-                    evento = Short.parseShort(gpiodata[2]);
-                }
+            String gpio = "";
+            // si es 3 obtenemos el evevento en length 3
+            if (dataHeader.length == 2) {
                 if (!registered) {
-                    if (dataHeader.length == 3) {
-                        e = ejc.findEquiposByEquipo(dataHeader[1]);
-                        auxDevice = dataHeader[1];
-                    } else {
-                        e = ejc.findEquiposByEquipo(dataHeader[2]);
-                        auxDevice = dataHeader[2];
-                    }
+                    e = ejc.findEquiposByEquipo(dataHeader[0]);
                     if (e != null) {
                         registered = true;
                         v = vjc.findVehiculosByEquipo(e.getEquipo());
                         if (v == null) {
                             System.out.println("No hay vehiculo asociado al Equipo [" + e.getEquipo() + "]");
                         }
-                    }
-                    gpio = u.convertNumberToHexadecimal(dataHeader[0]);
-                    se = sejc.findSkyEventosByEvento(evento);
-                    if (se == null) {
-                        se = sejc.findSkyEventos(1);
+                    } else {
+                        auxDevice = dataHeader[0];
                     }
                 }
-                // si esta registrado obtenemos su ubicacion
-                if (registered) {
-                    double latitud = u.convertLatLonSkp(dataTrama[4], dataTrama[5]);
-                    double longitud = u.convertLatLonSkp(dataTrama[6], dataTrama[7]);
-                    double speed = Math.rint(Double.parseDouble(dataTrama[8]) * 1.85 * 100) / 100;
-                    double course = Double.parseDouble(dataTrama[9]);
-                    if (se.getIdSkyEvento() == 10 || se.getIdSkyEvento() == 11) {
-                        if (speed > 90) {
-                            se = sejc.findSkyEventos(21);
+                gpio = u.convertNumberToHexadecimal(gpiodata[0], true);
+                se = sejc.findSkyEventosByEvento(Short.parseShort(gpiodata[1]));
+                if (se == null) {
+                    System.out.println("No se ha encontrado el evento en la búsqueda por evento");
+                }
+            } else if (dataHeader.length == 3) {
+                if (!registered) {
+                    e = ejc.findEquiposByEquipo(dataHeader[1]);
+                    if (e != null) {
+                        registered = true;
+                        v = vjc.findVehiculosByEquipo(e.getEquipo());
+                        if (v == null) {
+                            System.out.println("No hay vehiculo asociado al Equipo [" + e.getEquipo() + "]");
                         }
-                        if (speed > 60) {
-                            se = sejc.findSkyEventos(12);
-                        }
+                    } else {
+                        auxDevice = dataHeader[1];
                     }
-                    try {
-                        dsjc.create(new DatoSpks(new DatoSpksPK(e.getIdEquipo(), objCalDevice.getTime(), objCalDevice.getTime(), se.getIdSkyEvento()), new Date(), latitud, longitud, speed, course,
-                                Short.parseShort("" + gpio.charAt(8)),
-                                Short.parseShort("" + gpio.charAt(7)),
-                                Short.parseShort("" + gpio.charAt(6)),
-                                Short.parseShort("" + gpio.charAt(5)),
-                                Short.parseShort("" + gpio.charAt(4)),
-                                Short.parseShort("" + gpio.charAt(3)),
-                                Short.parseShort("" + gpio.charAt(2)),
-                                Short.parseShort("" + gpio.charAt(1)),
-                                Short.parseShort("" + gpio.charAt(0)),
-                                0, ""));
-                        sendMails();
-                        verificarGeocercas(latitud, longitud);
-                    } catch (PreexistingEntityException ex) {
-                        System.out.println("Dato ya Existe [" + this.data + "]");
-                        dijc.create(new DatoInvalidos(5, new Date(), e.getEquipo(), this.data));
-                    } catch (Exception ex) {
-                        System.out.println("Excepcion TCP [" + this.data + "] [" + ex.getMessage() + "]");
-                        dijc.create(new DatoInvalidos(2, new Date(), e.getEquipo(), this.data, ex.getMessage()));
-                    }
-                } else {
-                    dijc.create(new DatoInvalidos(3, new Date(), auxDevice, this.data));
-                    System.out.println("No se encuentra registrado:  [" + this.data + "].");
+                }
+                gpio = u.convertNumberToHexadecimal(gpiodata[0], true);
+                se = sejc.findSkyEventosByParametroAndEvent(Short.parseShort(dataHeader[0]), Short.parseShort(gpiodata[2]));
+                if (se == null) {
+                    System.out.println("No se ha encontrado el evento en la búsqueda por Parametro y Evento");
                 }
             } else {
                 System.out.println("Trama invalida [" + this.data + "]");
                 dijc.create(new DatoInvalidos(5, new Date(), e.getEquipo(), this.data));
+            }
+            // si esta registrado obtenemos su ubicacion
+            if (registered) {
+                double latitud = u.convertLatLonSkp(dataTrama[4], dataTrama[5]);
+                double longitud = u.convertLatLonSkp(dataTrama[6], dataTrama[7]);
+                double speed = Math.rint(Double.parseDouble(dataTrama[8]) * 1.85 * 100) / 100;
+                double course = Double.parseDouble(dataTrama[9]);
+                if (se.getIdSkyEvento() == 9 || se.getIdSkyEvento() == 10) {
+                    if (speed > 90) {
+                        se = sejc.findSkyEventos(20);
+                    }
+                    if (speed > 60) {
+                        se = sejc.findSkyEventos(11);
+                    }
+                }
+                try {
+                    dsjc.create(new DatoSpks(new DatoSpksPK(e.getIdEquipo(), objCalDevice.getTime(), objCalDevice.getTime(), se.getIdSkyEvento()), new Date(), latitud, longitud, speed, course,
+                            Short.parseShort("" + gpio.charAt(8)),
+                            Short.parseShort("" + gpio.charAt(7)),
+                            Short.parseShort("" + gpio.charAt(6)),
+                            Short.parseShort("" + gpio.charAt(5)),
+                            Short.parseShort("" + gpio.charAt(4)),
+                            Short.parseShort("" + gpio.charAt(3)),
+                            Short.parseShort("" + gpio.charAt(2)),
+                            Short.parseShort("" + gpio.charAt(1)),
+                            Short.parseShort("" + gpio.charAt(0)),
+                            0, ""));
+                    sendMails();
+                    verificarGeocercas(latitud, longitud);
+                } catch (PreexistingEntityException ex) {
+                    System.out.println("Dato ya Existe [" + this.data + "]");
+                    dijc.create(new DatoInvalidos(5, new Date(), e.getEquipo(), this.data));
+                } catch (Exception ex) {
+                    System.out.println("Excepcion TCP [" + this.data + "] [" + ex.getMessage() + "]");
+                    dijc.create(new DatoInvalidos(2, new Date(), e.getEquipo(), this.data, ex.getMessage()));
+                }
+            } else {
+                dijc.create(new DatoInvalidos(3, new Date(), auxDevice, this.data));
+                System.out.println("No se encuentra registrado:  [" + this.data + "].");
             }
         } else {
             dijc.create(new DatoInvalidos(4, new Date(), e.getEquipo(), this.data));
@@ -492,84 +485,79 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
     public void verificarGeocercas(double lat, double lon) {
         try {
             EstadoGeocerca estG;
-            Vehiculos vh = vjc.findVehiculosByEquipo(e.getEquipo());
-            if (vh != null) {
-                int idV = vh.getIdVehiculo();
-                List<GeocercaVehiculos> lgv = gcvh.findGeocercaVehiculos(idV);
-                if (lgv != null) {
-                    Personas personas = pc.findPersonas(vh.getIdPersona().getIdPersona());
-                    for (GeocercaVehiculos lgv1 : lgv) {
-                        List<GeocercaPuntos> listaPuntos = gcp.listaGeocercaPuntos(lgv1.getGeocercaVehiculosPK().getIdGeocerca());
-                        if (listaPuntos != null) {
-                            if (Utilities.pnpoly(listaPuntos.size(), datx(listaPuntos), daty(listaPuntos), lat, lon)) {
-                                estG = egc.findEstadoGeocerca(idV);
-                                if (estG == null) {
+            int idV = v.getIdVehiculo();
+            List<GeocercaVehiculos> lgv = gcvh.findGeocercaVehiculos(idV);
+            if (lgv != null) {
+                String correo = v.getIdPersona().getCorreo();
+                String person = v.getIdPersona().getApellidos() + " " + v.getIdPersona().getNombres();
+                for (GeocercaVehiculos lgv1 : lgv) {
+                    List<GeocercaPuntos> listaPuntos = gcp.listaGeocercaPuntos(lgv1.getGeocercaVehiculosPK().getIdGeocerca());
+                    if (listaPuntos != null) {
+                        if (Utilities.pnpoly(listaPuntos.size(), dat_x_Latitud(listaPuntos), dat_y_Longitud(listaPuntos), lat, lon)) {
+                            estG = egc.findEstadoGeocerca(idV);
+                            if (estG == null) {
+                                estG = new EstadoGeocerca();
+                                estG.setIdVehiculo(idV);
+                                estG.setEstado(1);
+                                egc.create(estG);
+                                hgc.create(new HistorialGeocercas(lgv1.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 1, new Date()));
+                                if (!correo.equals("")) {
+                                    System.out.println("Enviando Geocerca");
+                                    AlertaMail am1 = new AlertaMail(e.getEquipo(), correo, "Informe de Geo cerca", "Su Equipo acaba de Entrar a la Geo cerca", person, "Geocercas");
+                                    am1.start();
+                                } else {
+                                    System.out.println("El Propietario de el equipo: " + e.getEquipo() + " no Cuenta con Correo para el Informe de Geo cerca");
+                                }
+                            } else {
+                                if (estG.getEstado() == 1) {
+                                    estG = new EstadoGeocerca();
+                                    estG.setIdVehiculo(idV);
+                                    estG.setEstado(0);
+                                    egc.edit(estG);
+                                    if (!correo.equals("")) {
+                                        System.out.println("Enviando Geo cerca");
+                                        AlertaMail am1 = new AlertaMail(e.getEquipo(), correo, "Informe de Geo cerca", "Su Equipo acaba de Entrar a la Geo cerca", person, "Geo cercas");
+                                        am1.start();
+                                        hgc.create(new HistorialGeocercas(lgv1.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 1, new Date()));
+                                    } else {
+                                        System.out.println("El Propietario de el equipo: " + e.getEquipo() + " no Cuenta con Correo para el Informe de Estado de Geo cerca");
+                                        hgc.create(new HistorialGeocercas(lgv1.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 1, new Date()));
+                                    }
+                                }
+                            }
+                        } else {
+                            estG = egc.findEstadoGeocerca(idV);
+                            if (estG != null) {
+                                if (estG.getEstado() == 0) {
                                     estG = new EstadoGeocerca();
                                     estG.setIdVehiculo(idV);
                                     estG.setEstado(1);
-                                    egc.create(estG);
-                                    hgc.create(new HistorialGeocercas(lgv1.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 1, new Date()));
-                                    if (!personas.getCorreo().equals("")) {
-                                        System.out.println("Enviando Geocerca");
-                                        AlertaMail am1 = new AlertaMail(e.getEquipo(), personas.getCorreo(), "Informe de Geocerca", "Su Equipo acaba de Entrar a la Geocerca", personas.getApellidos() + " " + personas.getNombres(), "Geocercas");
+                                    egc.edit(estG);
+                                    if (!correo.equals("")) {
+                                        System.out.println("Enviando Geo cerca");
+                                        AlertaMail am1 = new AlertaMail(e.getEquipo(), correo, "Informe de Geo cerca", "Su Equipo acaba de Salir de la Geo cerca", person, "Geo cercas");
                                         am1.start();
+                                        hgc.create(new HistorialGeocercas(lgv1.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 0, new Date()));
                                     } else {
-                                        System.out.println("El Propietario de el equipo: " + e.getEquipo() + " no Cuenta con Correo para el Informe de Geocerca");
-                                        hgc.create(new HistorialGeocercas(lgv1.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 1, new Date()));
-                                    }
-                                } else {
-                                    if (estG.getEstado() == 1) {
-                                        estG = new EstadoGeocerca();
-                                        estG.setIdVehiculo(idV);
-                                        estG.setEstado(0);
-                                        egc.edit(estG);
-                                        if (!personas.getCorreo().equals("")) {
-                                            System.out.println("Enviando Geocerca");
-                                            AlertaMail am1 = new AlertaMail(e.getEquipo(), personas.getCorreo(), "Informe de Geocerca", "Su Equipo acaba de Entrar a la Geocerca", personas.getApellidos() + " " + personas.getNombres(), "Geocercas");
-                                            am1.start();
-                                            hgc.create(new HistorialGeocercas(lgv1.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 1, new Date()));
-                                        } else {
-                                            System.out.println("El Propietario de el equipo: " + e.getEquipo() + " no Cuenta con Correo para el Informe de Estado de Geocerca");
-                                            hgc.create(new HistorialGeocercas(lgv1.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 1, new Date()));
-                                        }
+                                        System.out.println("El Propietario de el equipo: " + e.getEquipo() + " no Cuenta con Correo para el Informe de Geo cerca");
+                                        hgc.create(new HistorialGeocercas(lgv1.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 0, new Date()));
                                     }
                                 }
-                            } else {
-                                estG = egc.findEstadoGeocerca(idV);
-                                if (estG != null) {
-                                    if (estG.getEstado() == 0) {
-                                        estG = new EstadoGeocerca();
-                                        estG.setIdVehiculo(idV);
-                                        estG.setEstado(1);
-                                        egc.edit(estG);
-                                        if (!personas.getCorreo().equals("")) {
-                                            System.out.println("Enviando Geocerca");
-                                            AlertaMail am1 = new AlertaMail(e.getEquipo(), personas.getCorreo(), "Informe de Geocerca", "Su Equipo acaba de Salir de la Geocerca", personas.getApellidos() + " " + personas.getNombres(), "Geocercas");
-                                            am1.start();
-                                            hgc.create(new HistorialGeocercas(lgv1.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 0, new Date()));
-                                        } else {
-                                            System.out.println("El Propietario de el equipo: " + e.getEquipo() + " no Cuenta con Correo para el Informe de Geocerca");
-                                            hgc.create(new HistorialGeocercas(lgv1.getGeocercaVehiculosPK().getIdGeocerca(), idV, (short) 0, new Date()));
-                                        }
-                                    }
-                                } 
                             }
-                        } else {
-                            System.out.println("NO hay puntos de esta Geocerca");
                         }
+                    } else {
+                        System.out.println("NO hay puntos de esta Geocerca");
                     }
-                } else {
-                    System.out.println("Vehiculo no tiene Geocercas");
                 }
             } else {
-                System.out.println("Vehiculo no Registrado");
+                System.out.println("Vehiculo no tiene Geocercas");
             }
         } catch (Exception e) {
             System.out.println("Error de Retorno de Objeto:" + e.getLocalizedMessage());
         }
     }
 
-    public double[] datx(List<GeocercaPuntos> list) {
+    public double[] dat_x_Latitud(List<GeocercaPuntos> list) {
         double x[] = new double[list.size()];
         for (int i = 0; i < list.size(); i++) {
             x[i] = list.get(i).getLatitud();
@@ -577,7 +565,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         return x;
     }
 
-    public double[] daty(List<GeocercaPuntos> list) {
+    public double[] dat_y_Longitud(List<GeocercaPuntos> list) {
         double y[] = new double[list.size()];
         for (int i = 0; i < list.size(); i++) {
             y[i] = list.get(i).getLongitud();

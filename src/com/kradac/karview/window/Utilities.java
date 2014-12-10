@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
  */
 public class Utilities {
 
-    public static boolean isSKpat = false;
 
     //Directorio Actual
     private static File WORKING_DIRECTORY;
@@ -108,10 +107,9 @@ public class Utilities {
      * @param numHex
      * @return
      */
-    int conHex = 0;
-
-    public String convertNumberToHexadecimal(String numHex) {
-        if (isSKpat) {
+     int conHex=0;
+      public String convertNumberToHexadecimal(String numHex, boolean isHexadecimal) {
+        if (isHexadecimal) {
             conHex = Integer.parseInt(numHex, 16);
         } else {
             conHex = Integer.parseInt(numHex);
@@ -119,7 +117,7 @@ public class Utilities {
         String binario = Integer.toBinaryString(conHex);
         return completeDigits(binario);
     }
-
+    
     /**
      * Completa el número de BITS faltantes
      *
@@ -344,14 +342,14 @@ public class Utilities {
     
     
     
-     public static boolean pnpoly(int nvert, double[] vertx, double[] verty, double testx, double testy) {        
+     public static boolean pnpoly(int nvert, double[] vert_x, double[] vert_y, double latitud, double longitud) {        
         int i, j;
         boolean c = false;
         for (i = 0, j = nvert - 1; i < nvert; j = i++) {
-            if (((verty[i] > testy) != (verty[j] > testy)) && (testx < (vertx[j] - vertx[i])
-                    * (testy - verty[i])
-                    / (verty[j] - verty[i])
-                    + vertx[i])) {
+            if (((vert_y[i] > longitud) != (vert_y[j] > longitud)) && (latitud < (vert_x[j] - vert_x[i])
+                    * (longitud - vert_y[i])
+                    / (vert_y[j] - vert_y[i])
+                    + vert_x[i])) {
                 c = !c;
             }
         }

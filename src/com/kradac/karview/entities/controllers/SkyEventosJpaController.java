@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.kradac.karview.entities.controllers;
 
 import com.kradac.karview.entities.controllers.exceptions.IllegalOrphanException;
@@ -257,8 +256,8 @@ public class SkyEventosJpaController implements Serializable {
             em.close();
         }
     }
-    
-        public SkyEventos findSkyEventosByParametro(short parameter) {
+
+    public SkyEventos findSkyEventosByParametro(short parameter) {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<SkyEventos> qry;
@@ -271,13 +270,28 @@ public class SkyEventosJpaController implements Serializable {
             em.close();
         }
     }
-        
-            public SkyEventos findSkyEventosByEvento(short evento) {
+
+    public SkyEventos findSkyEventosByParametroAndEvent(short parameter, short event) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<SkyEventos> qry;
+            qry = em.createNamedQuery("SkyEventos.findByParametro", SkyEventos.class);
+            qry.setParameter("parametro", parameter);
+            qry.setParameter("evento", event);
+            return qry.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } finally {
+            em.close();
+        }
+    }
+
+    public SkyEventos findSkyEventosByEvento(short evento) {
         EntityManager em = getEntityManager();
         try {
             List<SkyEventos> lstSkyEventos;
             SkyEventos se = null;
-            
+
             TypedQuery<SkyEventos> qry;
             qry = em.createNamedQuery("SkyEventos.findByEvento", SkyEventos.class);
             qry.setParameter("evento", evento);
@@ -293,5 +307,5 @@ public class SkyEventosJpaController implements Serializable {
             em.close();
         }
     }
-    
+
 }

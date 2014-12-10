@@ -17,44 +17,7 @@ import java.util.List;
  */
 public class MyDecoder extends ByteToMessageDecoder {
 
-//    private final ByteBuf in = Unpooled.buffer();
-//    @Override
-//    protected void decode(ChannelHandlerContext chc, ByteBuf bb, List<Object> list) throws Exception {
-//        if (bb.readableBytes() < 2) {
-//            return;
-//        }
-//        bb.markReaderIndex();
-//        int length = bb.readChar();
-//        if (length > 150) {
-//            String data = "";
-//            while (bb.isReadable()) {
-//                data += (char) bb.readByte();
-//            }
-//            bb.clear();
-//            if (data.contains("OK") || data.contains("handshake")) {
-//                if (data.contains("handshake")) {
-//                    chc.channel().write("0%%at");
-//                }
-//                if (data.contains("OK")) {
-//                    System.out.println("Respuesta de Comando AT [" + data + "]");
-//                }
-//            } else {
-//                System.err.println("Datos incorrectos enviados al Servidor [" + data + "]");
-//                chc.channel().disconnect();
-//            }
-//        }
-//        if (bb.readableBytes() < length - 2) {
-//            bb.resetReaderIndex();
-//            return;
-//        }
-//        in.writeBytes(bb);
-//        in.discardReadBytes();
-//        in.retain();
-//        list.add(in);
-//        bb.clear();
-//    }
-    
-
+    private final ByteBuf in = Unpooled.buffer();
     @Override
     protected void decode(ChannelHandlerContext chc, ByteBuf bb, List<Object> list) throws Exception {
         if (bb.readableBytes() < 2) {
@@ -68,7 +31,6 @@ public class MyDecoder extends ByteToMessageDecoder {
                 data += (char) bb.readByte();
             }
             bb.clear();
-
             if (data.contains("OK") || data.contains("handshake")) {
                 if (data.contains("handshake")) {
                     chc.channel().write("0%%at");
@@ -81,12 +43,47 @@ public class MyDecoder extends ByteToMessageDecoder {
                 chc.channel().disconnect();
             }
         }
-
         if (bb.readableBytes() < length - 2) {
             bb.resetReaderIndex();
             return;
         }
-
-        list.add(bb.readBytes(length - 2));
+        in.writeBytes(bb);//Escribimos los bytes
+        in.discardReadBytes();//
+        in.retain();
+        list.add(in);
+        bb.clear();//vaciamos el byteBuf
     }
+//    @Override
+//    protected void decode(ChannelHandlerContext chc, ByteBuf bb, List<Object> list) throws Exception {
+//        if (bb.readableBytes() < 2) {
+//            return;
+//        }
+//        bb.markReaderIndex();
+//        int length = bb.readChar();
+//        if (length > 150) {
+//            String data = "";
+//            while (bb.isReadable()) {
+//                data += (char) bb.readByte();
+//            }
+//            bb.clear();
+//
+//            if (data.contains("OK") || data.contains("handshake")) {
+//                if (data.contains("handshake")) {
+//                    chc.channel().write("0%%at");
+//                }
+//                if (data.contains("OK")) {
+//                    System.out.println("Respuesta de Comando AT [" + data + "]");
+//                }
+//            } else {
+//                System.err.println("Datos incorrectos enviados al Servidor [" + data + "]");
+//                chc.channel().disconnect();
+//            }
+//        }
+//
+//        if (bb.readableBytes() < length - 2) {
+//            bb.resetReaderIndex();
+//            return;
+//        }
+//        list.add(bb.readBytes(length - 2));
+//    }
 }
