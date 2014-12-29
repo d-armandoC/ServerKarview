@@ -3,13 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.kradac.karview.entities.controllers;
 
 import com.kradac.karview.entities.controllers.exceptions.NonexistentEntityException;
 import com.kradac.karview.entities.controllers.exceptions.PreexistingEntityException;
-import com.kradac.karview.entities.logic.Mantenimiento;
-import com.kradac.karview.entities.logic.MantenimientoPK;
+import com.kradac.karview.entities.historic.Historicomantenimientovehiculo;
+import com.kradac.karview.entities.historic.HistoricomantenimientovehiculoPK;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -23,9 +22,9 @@ import javax.persistence.criteria.Root;
  *
  * @author Diego C
  */
-public class MantenimientoJpaController implements Serializable {
+public class HistoricomantenimientovehiculoJpaController implements Serializable {
 
-    public MantenimientoJpaController(EntityManagerFactory emf) {
+    public HistoricomantenimientovehiculoJpaController(EntityManagerFactory emf) {
         this.emf = emf;
     }
     private EntityManagerFactory emf = null;
@@ -34,19 +33,19 @@ public class MantenimientoJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(Mantenimiento mantenimiento) throws PreexistingEntityException, Exception {
-        if (mantenimiento.getMantenimientoPK() == null) {
-            mantenimiento.setMantenimientoPK(new MantenimientoPK());
+    public void create(Historicomantenimientovehiculo historicomantenimientovehiculo) throws PreexistingEntityException, Exception {
+        if (historicomantenimientovehiculo.getHistoricomantenimientovehiculoPK() == null) {
+            historicomantenimientovehiculo.setHistoricomantenimientovehiculoPK(new HistoricomantenimientovehiculoPK());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            em.persist(mantenimiento);
+            em.persist(historicomantenimientovehiculo);
             em.getTransaction().commit();
         } catch (Exception ex) {
-            if (findMantenimiento(mantenimiento.getMantenimientoPK()) != null) {
-                throw new PreexistingEntityException("Mantenimiento " + mantenimiento + " already exists.", ex);
+            if (findHistoricomantenimientovehiculo(historicomantenimientovehiculo.getHistoricomantenimientovehiculoPK()) != null) {
+                throw new PreexistingEntityException("Historicomantenimientovehiculo " + historicomantenimientovehiculo + " already exists.", ex);
             }
             throw ex;
         } finally {
@@ -56,19 +55,19 @@ public class MantenimientoJpaController implements Serializable {
         }
     }
 
-    public void edit(Mantenimiento mantenimiento) throws NonexistentEntityException, Exception {
+    public void edit(Historicomantenimientovehiculo historicomantenimientovehiculo) throws NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            mantenimiento = em.merge(mantenimiento);
+            historicomantenimientovehiculo = em.merge(historicomantenimientovehiculo);
             em.getTransaction().commit();
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                MantenimientoPK id = mantenimiento.getMantenimientoPK();
-                if (findMantenimiento(id) == null) {
-                    throw new NonexistentEntityException("The mantenimiento with id " + id + " no longer exists.");
+                HistoricomantenimientovehiculoPK id = historicomantenimientovehiculo.getHistoricomantenimientovehiculoPK();
+                if (findHistoricomantenimientovehiculo(id) == null) {
+                    throw new NonexistentEntityException("The historicomantenimientovehiculo with id " + id + " no longer exists.");
                 }
             }
             throw ex;
@@ -79,19 +78,19 @@ public class MantenimientoJpaController implements Serializable {
         }
     }
 
-    public void destroy(MantenimientoPK id) throws NonexistentEntityException {
+    public void destroy(HistoricomantenimientovehiculoPK id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Mantenimiento mantenimiento;
+            Historicomantenimientovehiculo historicomantenimientovehiculo;
             try {
-                mantenimiento = em.getReference(Mantenimiento.class, id);
-                mantenimiento.getMantenimientoPK();
+                historicomantenimientovehiculo = em.getReference(Historicomantenimientovehiculo.class, id);
+                historicomantenimientovehiculo.getHistoricomantenimientovehiculoPK();
             } catch (EntityNotFoundException enfe) {
-                throw new NonexistentEntityException("The mantenimiento with id " + id + " no longer exists.", enfe);
+                throw new NonexistentEntityException("The historicomantenimientovehiculo with id " + id + " no longer exists.", enfe);
             }
-            em.remove(mantenimiento);
+            em.remove(historicomantenimientovehiculo);
             em.getTransaction().commit();
         } finally {
             if (em != null) {
@@ -100,19 +99,19 @@ public class MantenimientoJpaController implements Serializable {
         }
     }
 
-    public List<Mantenimiento> findMantenimientoEntities() {
-        return findMantenimientoEntities(true, -1, -1);
+    public List<Historicomantenimientovehiculo> findHistoricomantenimientovehiculoEntities() {
+        return findHistoricomantenimientovehiculoEntities(true, -1, -1);
     }
 
-    public List<Mantenimiento> findMantenimientoEntities(int maxResults, int firstResult) {
-        return findMantenimientoEntities(false, maxResults, firstResult);
+    public List<Historicomantenimientovehiculo> findHistoricomantenimientovehiculoEntities(int maxResults, int firstResult) {
+        return findHistoricomantenimientovehiculoEntities(false, maxResults, firstResult);
     }
 
-    private List<Mantenimiento> findMantenimientoEntities(boolean all, int maxResults, int firstResult) {
+    private List<Historicomantenimientovehiculo> findHistoricomantenimientovehiculoEntities(boolean all, int maxResults, int firstResult) {
         EntityManager em = getEntityManager();
         try {
             CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            cq.select(cq.from(Mantenimiento.class));
+            cq.select(cq.from(Historicomantenimientovehiculo.class));
             Query q = em.createQuery(cq);
             if (!all) {
                 q.setMaxResults(maxResults);
@@ -124,20 +123,20 @@ public class MantenimientoJpaController implements Serializable {
         }
     }
 
-    public Mantenimiento findMantenimiento(MantenimientoPK id) {
+    public Historicomantenimientovehiculo findHistoricomantenimientovehiculo(HistoricomantenimientovehiculoPK id) {
         EntityManager em = getEntityManager();
         try {
-            return em.find(Mantenimiento.class, id);
+            return em.find(Historicomantenimientovehiculo.class, id);
         } finally {
             em.close();
         }
     }
 
-    public int getMantenimientoCount() {
+    public int getHistoricomantenimientovehiculoCount() {
         EntityManager em = getEntityManager();
         try {
             CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            Root<Mantenimiento> rt = cq.from(Mantenimiento.class);
+            Root<Historicomantenimientovehiculo> rt = cq.from(Historicomantenimientovehiculo.class);
             cq.select(em.getCriteriaBuilder().count(rt));
             Query q = em.createQuery(cq);
             return ((Long) q.getSingleResult()).intValue();

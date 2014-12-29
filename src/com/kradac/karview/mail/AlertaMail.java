@@ -66,6 +66,39 @@ public class AlertaMail extends Thread {
         mensaje.append(firm);
     }
     
+    //constructor para envio de correos de mantenimiento
+       public AlertaMail(String equipo, String mailPara, String message, String person) {
+        this.mailPara = mailPara;
+        this.titulo = "Alerta!!! [" + "REPORTE DE MANTENIMIENTO" + "] : " + Utilities.getDate() + " " + Utilities.getTime();
+        mensaje = new StringBuilder();
+        mensaje.append(person).append(",<br><br>");
+        mensaje.append("Le informamos que hoy se ha Cumplido la Fecha configurada en el Sistema.<br><br>");
+        mensaje.append("<b>Vehiculo: </b>").append(equipo).append("<br>");
+
+        mensaje.append("<b>Mensaje:<b><br>");
+        mensaje.append(message);
+
+        mensaje.append("<br><br>Fecha: ").append(Utilities.getDate());
+        mensaje.append("<br>Hora: ").append(Utilities.getTime()).append("<br><br><br>");
+        mensaje.append(firm);
+    }
+    //constructor para envio de correos de mantenimiento
+       public AlertaMail(String equipo, String mailPara, String message, String person, boolean bandera) {
+        this.mailPara = mailPara;
+        this.titulo = "Alerta!!! [" + "REPORTE DE MANTENIMIENTO" + "] : " + Utilities.getDate() + " " + Utilities.getTime();
+        mensaje = new StringBuilder();
+        mensaje.append(person).append(",<br><br>");
+        mensaje.append("Le informamos que hoy se ha Cumplido la Fecha configurada en el Sistema.<br><br>");
+        mensaje.append("<b>Vehiculo: </b>").append(equipo).append("<br>");
+
+        mensaje.append("<b>Mensaje:<b><br>");
+        mensaje.append(message);
+
+        mensaje.append("<br><br>Fecha: ").append(Utilities.getDate());
+        mensaje.append("<br>Hora: ").append(Utilities.getTime()).append("<br><br><br>");
+        mensaje.append(firm);
+    }
+       
     ///Constructor para el envio de Geocercas
     public AlertaMail(String equipo, String mailPara, String estadoGEocerca, String message, String person, String tipoServicio) {
         this.mailPara = mailPara;

@@ -16,10 +16,13 @@ import com.kradac.karview.entities.controllers.DatoSpksJpaController;
 import com.kradac.karview.entities.controllers.EnvioCorreosJpaController;
 import com.kradac.karview.entities.controllers.EquiposJpaController;
 import com.kradac.karview.entities.controllers.EstadoGeocercaJpaController;
+import com.kradac.karview.entities.controllers.EstandarVehiculosJpaController;
 import com.kradac.karview.entities.controllers.GeocercaPuntosJpaController;
 import com.kradac.karview.entities.controllers.GeocercaVehiculosJpaController;
 import com.kradac.karview.entities.controllers.HistorialGeocercasJpaController;
+import com.kradac.karview.entities.controllers.MantenimientovehiculoJpaController;
 import com.kradac.karview.entities.controllers.PersonasJpaController;
+import com.kradac.karview.entities.controllers.RegistrosMantenimientoJpaController;
 import com.kradac.karview.entities.controllers.SkyEventosJpaController;
 import com.kradac.karview.entities.controllers.UltimoDatoSkpsJpaController;
 import com.kradac.karview.entities.controllers.VehiculosJpaController;
@@ -31,8 +34,11 @@ import com.kradac.karview.entities.historic.DatoSpks;
 import com.kradac.karview.entities.historic.DatoSpksPK;
 import com.kradac.karview.entities.historic.HistorialGeocercas;
 import com.kradac.karview.entities.logic.EstadoGeocerca;
+import com.kradac.karview.entities.logic.EstandarVehiculos;
 import com.kradac.karview.entities.logic.GeocercaPuntos;
 import com.kradac.karview.entities.logic.GeocercaVehiculos;
+import com.kradac.karview.entities.logic.Mantenimientovehiculo;
+import com.kradac.karview.entities.logic.RegistrosMantenimiento;
 import com.kradac.karview.mail.AlertaMail;
 import com.kradac.karview.window.Gui;
 import com.kradac.karview.window.Utilities;
@@ -46,6 +52,7 @@ import io.netty.util.TimerTask;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -78,12 +85,14 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
     private final GeocercaPuntosJpaController gcp;
     private final EstadoGeocercaJpaController egc;
     private final PersonasJpaController pc;
-
+    private final MantenimientovehiculoJpaController vmc;
+    private final EstandarVehiculosJpaController estv;
 // Datos de la Historica
     private final DatoSpksJpaController dsjc;
     private final DatoInvalidosJpaController dijc;
     private final ComandosJpaController cjc;
     private final HistorialGeocercasJpaController hgc;
+    private final RegistrosMantenimientoJpaController rgm;
 
     private Vehiculos v;
     private Equipos e;
@@ -109,6 +118,9 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         this.gcp = new GeocercaPuntosJpaController(Gui.getCpdb().choosePersistenceLogicOpen());
         this.egc = new EstadoGeocercaJpaController(Gui.getCpdb().choosePersistenceLogicOpen());
         this.pc = new PersonasJpaController(Gui.getCpdb().choosePersistenceLogicOpen());
+        this.vmc = new MantenimientovehiculoJpaController(Gui.getCpdb().choosePersistenceLogicOpen());
+        this.estv = new EstandarVehiculosJpaController(Gui.getCpdb().choosePersistenceLogicOpen());
+        this.rgm = new RegistrosMantenimientoJpaController(Gui.getCpdb().choosePersistenceLogicOpen());
 
         this.dsjc = new DatoSpksJpaController(Gui.getCpdb().choosePersistenceHistoricOpen());
         this.dijc = new DatoInvalidosJpaController(Gui.getCpdb().choosePersistenceHistoricOpen());
@@ -136,43 +148,40 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         }
         this.data = auxdata;
         buf.clear();
-        if (auxdata.indexOf("0@80") == 0) {
-            if (auxdata.indexOf("0@8000001") == 0) {
-                System.out.println("Trama Conexion SKP+: [" + auxdata + "]");
-                u.sendToFile(2, "skp+", this.data);
-                tramaConecxion(u.clearDataConnection(this.data));
-            } else if (auxdata.indexOf("0@80") == 0) {
-                System.out.println("Trama Conexion SKP: [" + auxdata + "]");
-                u.sendToFile(3, "skp", this.data);
-                tramaConecxion(u.clearDataConnection(this.data));
-            } else {
-                System.err.println("Trama sin Procesar: [" + auxdata + "]");
-                if (registered) {
-                    dijc.create(new DatoInvalidos(1, new Date(), e.getEquipo(), this.data));
-                } else {
-                    dijc.create(new DatoInvalidos(1, new Date(), "", this.data));
-                }
-            }
-        } else if (auxdata.indexOf("0150") == 0) {
+
+        System.out.println("Trama que llega: " + this.data);
+        if (this.data.indexOf("0@80") == 0) {
+            System.out.println("Entre al encabezado [0@80]");
+            System.out.println("Trama: " + this.data);
+            System.out.println("Trama SKP+ +param: [" + auxdata + "]");
+            u.sendToFile(3, "skp+", this.data);
+            tramaMinuto(this.data.substring(5));
+        } else if (this.data.indexOf("0@8000001") == 0) {
+            System.out.println("Trama Conexión SKP+: [" + auxdata + "]");
+            u.sendToFile(2, "skp+", this.data);
+            tramaConecxion(u.clearDataConnection(this.data));
+        } else if (this.data.indexOf("0@80") == 0) {
+            System.out.println("Trama Conexión SKP: [" + auxdata + "]");
+            u.sendToFile(2, "skp", this.data);
+            tramaConecxion(u.clearDataConnection(this.data));
+        } else if (this.data.indexOf("0150") == 0) {
             System.out.println("Respuesta Cmd: [" + auxdata + "]");
 //                    processResponseComand(this.data.substring(5));
-        } else if (auxdata.indexOf("0420") == 0) {
+        } else if (this.data.indexOf("0420") == 0) {
             System.out.println("Trama SKP: [" + data + "]");
             u.sendToFile(3, "skp", this.data);
             procesarSKP(this.data.substring(9));
-        } else if (auxdata.indexOf("0@8 488") == 0) { // 0@8 488 ￌ
+        } else if (this.data.indexOf("0@8 488") == 0) { // 0@8 488 ￌ
             System.out.println("Trama SKP+ -param: [" + auxdata + "]");
             u.sendToFile(3, "skp", this.data);
-            tramaMinuto(this.data.substring(9));
-        } else if (auxdata.indexOf("0@8 0") == 0) {
-            System.out.println("Trama SKP+ +param: [" + auxdata + "]");
-            u.sendToFile(3, "skp+", this.data);
             tramaMinuto(this.data.substring(9));
         } else {
             System.err.println("Trama sin Procesar: [" + auxdata + "]");
             if (registered) {
                 dijc.create(new DatoInvalidos(1, new Date(), e.getEquipo(), this.data));
+                System.out.println("entra aqui 1");
             } else {
+                System.out.println("entra aqui 2");
                 dijc.create(new DatoInvalidos(1, new Date(), "", this.data));
             }
         }
@@ -231,7 +240,6 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                             e, new SkyEventos(1)));
                 } else {
                     try {
-                        System.out.println("tramas de Conecxion");
                         uds.setFechaHoraConex(new Date());
                         uds.setFechaHoraUltDato(new Date());
                         udsjc.edit(uds);
@@ -280,7 +288,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                 }
             } else {
                 System.out.println("Trama inválida [" + this.data + "]");
-                dijc.create(new DatoInvalidos(5, new Date(), e.getEquipo(), this.data));
+                dijc.create(new DatoInvalidos(3, new Date(), e.getEquipo(), this.data));
             }
             if (registered) {
                 double latitud = u.convertLatLonSkp(dataTrama[3], dataTrama[4]);
@@ -307,6 +315,8 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                             Short.parseShort("" + gpio.charAt(1)),
                             Short.parseShort("" + gpio.charAt(0)),
                             0, ""));
+                    notificarMantenimiento();
+                    registrosMantenimiento();
                     sendMails();
                     verificarGeocercas(latitud, longitud);
                 } catch (PreexistingEntityException ex) {
@@ -342,7 +352,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             }
             String dataHeader[] = cabezera.split(" ");
             String gpio = "";
-            // si es 3 obtenemos el evevento en length 3
+            // si es 2 obtenemos el evevento en length 2
             if (dataHeader.length == 2) {
                 if (!registered) {
                     e = ejc.findEquiposByEquipo(dataHeader[0]);
@@ -375,10 +385,18 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                     }
                 }
                 gpio = u.convertNumberToHexadecimal(gpiodata[0], true);
-                se = sejc.findSkyEventosByParametroAndEvent(Short.parseShort(dataHeader[0]), Short.parseShort(gpiodata[2]));
-                if (se == null) {
-                    System.out.println("No se ha encontrado el evento en la búsqueda por Parametro y Evento");
+                try {
+                    se = sejc.findSkyEventosByParametroAndEvent(Short.parseShort(dataHeader[0]), Short.parseShort(gpiodata[2]));
+                    if (se == null) {
+                        se = sejc.findSkyEventosByEvento(Short.parseShort(gpiodata[2]));
+                    }
+                    if (se == null) {
+                        System.out.println("No se ha encontrado el evento en la búsqueda por Parametro y Evento");
+                    }
+                } catch (Exception e) {
+                    System.out.println("No se encontraron el Evento" + e.getLocalizedMessage());
                 }
+
             } else {
                 System.out.println("Trama invalida [" + this.data + "]");
                 dijc.create(new DatoInvalidos(5, new Date(), e.getEquipo(), this.data));
@@ -409,6 +427,8 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                             Short.parseShort("" + gpio.charAt(1)),
                             Short.parseShort("" + gpio.charAt(0)),
                             0, ""));
+                    notificarMantenimiento();
+                    registrosMantenimiento();
                     sendMails();
                     verificarGeocercas(latitud, longitud);
                 } catch (PreexistingEntityException ex) {
@@ -425,6 +445,60 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         } else {
             dijc.create(new DatoInvalidos(4, new Date(), e.getEquipo(), this.data));
             System.out.println("Poblemas de Fecha y Hora [" + this.data + "]");
+        }
+    }
+
+    public void notificarMantenimiento() {
+        try {
+            Calendar fechaProxima;
+            List<Mantenimientovehiculo> listaMant = vmc.obtenerRegistrosHoy(new Date());
+            for (Mantenimientovehiculo mantenimiento : listaMant) {
+                EstandarVehiculos estandarVehiculo = estv.findEstandarVehiculos(mantenimiento.getMantenimientovehiculoPK().getIdEstandarVehiculo());
+                AlertaMail am = new AlertaMail(e.getEquipo(), v.getIdPersona().getCorreo(), "Deberia Chequear  : " + estandarVehiculo.getEstandarVehiculo(), v.getIdPersona().getApellidos() + " " + v.getIdPersona().getNombres());
+                am.start();
+                fechaProxima = new GregorianCalendar(new Date().getYear() + 1900, new Date().getMonth(), new Date().getDate());
+                fechaProxima.add(Calendar.DATE, mantenimiento.getMdias());
+                mantenimiento.setFechaConfig(fechaProxima.getTime());
+                vmc.edit(mantenimiento);
+            }
+        } catch (Exception e) {
+            System.out.println("Exception" + e.getLocalizedMessage());
+        }
+    }
+
+    public void registrosMantenimiento() {
+        try {
+             final long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
+            List<RegistrosMantenimiento> listaRegistro = rgm.obtenerRegistroMantenimiento(new Date());
+            for (RegistrosMantenimiento registro : listaRegistro) {
+                String tipoNotificacion = "";
+                switch (registro.getRegistrosMantenimientoPK().getIdRegistro()) {
+                    case 1:
+                        tipoNotificacion = "Revición de SOAT";
+                        break;
+                    case 2:
+                        tipoNotificacion = "Revición de MATRICULA";
+                        break;
+                    case 3:
+                        tipoNotificacion = "Revición de SEGURO";
+                        break;
+                }
+                AlertaMail mail = new AlertaMail(e.getEquipo(),v.getIdPersona().getCorreo(), "Deberia realizar una : " + tipoNotificacion, v.getIdPersona().getApellidos() + " " + v.getIdPersona().getNombres(), true);
+                mail.start();
+                Date fechaReg=registro.getFechaRegistro();// fecha registrada
+                Date fechaVenc=registro.getFechaVencimiento();// fecha de vencimiento
+                Calendar fechaRegistro = new GregorianCalendar(fechaReg.getYear() + 1900, fechaReg.getMonth(), fechaReg.getDate());
+                Calendar fechaProxima = new GregorianCalendar(fechaVenc.getYear() + 1900, fechaVenc.getMonth(), fechaVenc.getDate());
+                java.sql.Date fechaRegistrada = new java.sql.Date(fechaRegistro.getTimeInMillis());// Obtenemos los milisegundos de Fecha Registrada
+                long diferencia = (fechaVenc.getTime() - fechaRegistrada.getTime()) / MILLSECS_PER_DAY; //Diferencia entre fechaVencimiento-fechaRegistrada(cuantos dias hay...)
+                fechaProxima.add(Calendar.DATE, (int)diferencia);
+                registro.setFechaRegistro(fechaVenc);
+                registro.setFechaVencimiento(fechaProxima.getTime());
+                rgm.edit(registro);
+            }
+        } catch (Exception e) {
+            System.out.println("Exception" + e.getLocalizedMessage());
+
         }
     }
 

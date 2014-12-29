@@ -32,7 +32,6 @@ public class ThreadTimeStart extends Thread {
                     if (c == 10800) { // -> 3 horas
                         Gui.getCpdb().openOtherPersistence();
                     }
-
                     if (c == 21600) { // -> 3 horas
                         Gui.getCpdb().closePersistenceOpen();
                         c = 0;

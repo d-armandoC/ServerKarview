@@ -9,12 +9,13 @@
     <class>com.kradac.karview.entities.logic.EnvioCorreos</class>
     <class>com.kradac.karview.entities.logic.EnvioGeoCorreos</class>
     <class>com.kradac.karview.entities.logic.Equipos</class>
+    <class>com.kradac.karview.entities.logic.EstadoGeocerca</class>
     <class>com.kradac.karview.entities.logic.EstandarVehiculos</class>
     <class>com.kradac.karview.entities.logic.Generos</class>
     <class>com.kradac.karview.entities.logic.GeocercaPuntos</class>
     <class>com.kradac.karview.entities.logic.GeocercaVehiculos</class>
     <class>com.kradac.karview.entities.logic.Geocercas</class>
-    <class>com.kradac.karview.entities.logic.Mantenimiento</class>
+    <class>com.kradac.karview.entities.logic.Mantenimientovehiculo</class>
     <class>com.kradac.karview.entities.logic.Personas</class>
     <class>com.kradac.karview.entities.logic.RolUsuarios</class>
     <class>com.kradac.karview.entities.logic.SkyEventos</class>
@@ -24,6 +25,7 @@
     <class>com.kradac.karview.entities.logic.UltimoDatoSkps</class>
     <class>com.kradac.karview.entities.logic.Usuarios</class>
     <class>com.kradac.karview.entities.logic.Vehiculos</class>
+    <class>com.kradac.karview.entities.logic.RegistrosMantenimiento</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/Karviewdb?zeroDateTimeBehavior=convertToNull"/>
       <property name="javax.persistence.jdbc.user" value="root"/>
@@ -41,6 +43,7 @@
     <class>com.kradac.karview.entities.historic.DatoInvalidos</class>
     <class>com.kradac.karview.entities.historic.DatoSpks</class>
     <class>com.kradac.karview.entities.historic.HistorialGeocercas</class>
+    <class>com.kradac.karview.entities.historic.Historicomantenimientovehiculo</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/karviewhistoricodb?zeroDateTimeBehavior=convertToNull"/>
       <property name="javax.persistence.jdbc.user" value="root"/>
