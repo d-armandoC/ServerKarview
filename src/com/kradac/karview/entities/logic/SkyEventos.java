@@ -34,6 +34,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "SkyEventos.findByIdSkyEvento", query = "SELECT s FROM SkyEventos s WHERE s.idSkyEvento = :idSkyEvento"),
     @NamedQuery(name = "SkyEventos.findByEvento", query = "SELECT s FROM SkyEventos s WHERE s.evento = :evento"),
     @NamedQuery(name = "SkyEventos.findByParametro", query = "SELECT s FROM SkyEventos s WHERE s.parametro = :parametro"),
+    @NamedQuery(name = "SkyEventos.findByParametroEvent", query = "SELECT s FROM SkyEventos s WHERE s.parametro = :parametro and s.evento = :evento"),
     @NamedQuery(name = "SkyEventos.findBySkyEvento", query = "SELECT s FROM SkyEventos s WHERE s.skyEvento = :skyEvento"),
     @NamedQuery(name = "SkyEventos.findByAcronimo", query = "SELECT s FROM SkyEventos s WHERE s.acronimo = :acronimo"),
     @NamedQuery(name = "SkyEventos.findByColor", query = "SELECT s FROM SkyEventos s WHERE s.color = :color"),

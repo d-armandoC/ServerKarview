@@ -99,9 +99,8 @@ public class FrameUpload extends javax.swing.JFrame {
         }
         if (isCorrect) {
             String[] dataTrama = data.split(",");
-
             Calendar objCalDevice = u.validateDate(dataTrama[9], dataTrama[1].substring(0, dataTrama[1].lastIndexOf('.')), true);
-           
+            System.out.println(data);
         }
     }
 
@@ -119,10 +118,6 @@ public class FrameUpload extends javax.swing.JFrame {
                 while ((data = buffer.readLine()) != null) {
                     if (isSkp) {
                         proccessImportSkps(data);
-                    } else {
-                        if (data.length() > 75 && data.length() < 130) {
-                            proccessImportFastracks(data);
-                        }
                     }
                 }
                 btnStart.setEnabled(true);

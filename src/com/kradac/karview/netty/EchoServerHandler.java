@@ -170,19 +170,25 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         } else if (this.data.indexOf("0420") == 0) {
             System.out.println("Trama SKP: [" + data + "]");
             u.sendToFile(3, "skp", this.data);
-            procesarSKP(this.data.substring(9));
+            procesarSKP(this.data.substring(5));
         } else if (this.data.indexOf("0@8 488") == 0) { // 0@8 488 ￌ
             System.out.println("Trama SKP+ -param: [" + auxdata + "]");
             u.sendToFile(3, "skp", this.data);
             tramaMinuto(this.data.substring(9));
         } else {
-            System.err.println("Trama sin Procesar: [" + auxdata + "]");
-            if (registered) {
-                dijc.create(new DatoInvalidos(1, new Date(), e.getEquipo(), this.data));
-                System.out.println("entra aqui 1");
-            } else {
-                System.out.println("entra aqui 2");
-                dijc.create(new DatoInvalidos(1, new Date(), "", this.data));
+            if (this.data.indexOf("0@80") == 0) {
+                System.out.println("Aqui");
+            } else if (this.data.indexOf("0@80") == 0) {
+
+            } else if (this.data.indexOf("0 @80") == 0) {
+                System.err.println("Trama sin Procesar: [" + auxdata + "]");
+                if (registered) {
+                    dijc.create(new DatoInvalidos(1, new Date(), e.getEquipo(), this.data));
+                    System.out.println("entra aqui 1");
+                } else {
+                    System.out.println("entra aqui 2");
+                    dijc.create(new DatoInvalidos(1, new Date(), "", this.data));
+                }
             }
         }
     }
@@ -315,8 +321,8 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                             Short.parseShort("" + gpio.charAt(1)),
                             Short.parseShort("" + gpio.charAt(0)),
                             0, ""));
-                    notificarMantenimiento();
-                    registrosMantenimiento();
+//                    notificarMantenimiento();
+//                    registrosMantenimiento();
                     sendMails();
                     verificarGeocercas(latitud, longitud);
                 } catch (PreexistingEntityException ex) {
@@ -427,8 +433,8 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                             Short.parseShort("" + gpio.charAt(1)),
                             Short.parseShort("" + gpio.charAt(0)),
                             0, ""));
-                    notificarMantenimiento();
-                    registrosMantenimiento();
+//                    notificarMantenimiento();
+//                    registrosMantenimiento();
                     sendMails();
                     verificarGeocercas(latitud, longitud);
                 } catch (PreexistingEntityException ex) {
@@ -448,103 +454,103 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         }
     }
 
-    public void notificarMantenimiento() {
-        try {
-            Calendar fechaProxima;
-            List<Mantenimientovehiculo> listaMant = vmc.obtenerRegistrosHoy(new Date());
-            for (Mantenimientovehiculo mantenimiento : listaMant) {
-                EstandarVehiculos estandarVehiculo = estv.findEstandarVehiculos(mantenimiento.getMantenimientovehiculoPK().getIdEstandarVehiculo());
-                AlertaMail am = new AlertaMail(e.getEquipo(), v.getIdPersona().getCorreo(), "Deberia Chequear  : " + estandarVehiculo.getEstandarVehiculo(), v.getIdPersona().getApellidos() + " " + v.getIdPersona().getNombres());
-                am.start();
-                fechaProxima = new GregorianCalendar(new Date().getYear() + 1900, new Date().getMonth(), new Date().getDate());
-                fechaProxima.add(Calendar.DATE, mantenimiento.getMdias());
-                mantenimiento.setFechaConfig(fechaProxima.getTime());
-                vmc.edit(mantenimiento);
-            }
-        } catch (Exception e) {
-            System.out.println("Exception" + e.getLocalizedMessage());
-        }
-    }
+//    public void notificarMantenimiento() {
+//        try {
+//            Calendar fechaProxima;
+//            List<Mantenimientovehiculo> listaMant = vmc.obtenerRegistrosHoy(new Date());
+//            for (Mantenimientovehiculo mantenimiento : listaMant) {
+//                EstandarVehiculos estandarVehiculo = estv.findEstandarVehiculos(mantenimiento.getMantenimientovehiculoPK().getIdEstandarVehiculo());
+//                AlertaMail am = new AlertaMail(e.getEquipo(), v.getIdPersona().getCorreo(), "Deberia Chequear  : " + estandarVehiculo.getEstandarVehiculo(), v.getIdPersona().getApellidos() + " " + v.getIdPersona().getNombres());
+//                am.start();
+//                fechaProxima = new GregorianCalendar(new Date().getYear() + 1900, new Date().getMonth(), new Date().getDate());
+//                fechaProxima.add(Calendar.DATE, mantenimiento.getMdias());
+//                mantenimiento.setFechaConfig(fechaProxima.getTime());
+//                vmc.edit(mantenimiento);
+//            }
+//        } catch (Exception e) {
+//            System.out.println("Exception" + e.getLocalizedMessage());
+//        }
+//    }
+//
+//    public void registrosMantenimiento() {
+//        try {
+//            final long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
+//            List<RegistrosMantenimiento> listaRegistro = rgm.obtenerRegistroMantenimiento(new Date());
+//            for (RegistrosMantenimiento registro : listaRegistro) {
+//                String tipoNotificacion = "";
+//                switch (registro.getRegistrosMantenimientoPK().getIdRegistro()) {
+//                    case 1:
+//                        tipoNotificacion = "Revición de SOAT";
+//                        break;
+//                    case 2:
+//                        tipoNotificacion = "Revición de MATRICULA";
+//                        break;
+//                    case 3:
+//                        tipoNotificacion = "Revición de SEGURO";
+//                        break;
+//                }
+//                AlertaMail mail = new AlertaMail(e.getEquipo(), v.getIdPersona().getCorreo(), "Deberia realizar una : " + tipoNotificacion, v.getIdPersona().getApellidos() + " " + v.getIdPersona().getNombres(), true);
+//                mail.start();
+//                Date fechaReg = registro.getFechaRegistro();// fecha registrada
+//                Date fechaVenc = registro.getFechaVencimiento();// fecha de vencimiento
+//                Calendar fechaRegistro = new GregorianCalendar(fechaReg.getYear() + 1900, fechaReg.getMonth(), fechaReg.getDate());
+//                Calendar fechaProxima = new GregorianCalendar(fechaVenc.getYear() + 1900, fechaVenc.getMonth(), fechaVenc.getDate());
+//                java.sql.Date fechaRegistrada = new java.sql.Date(fechaRegistro.getTimeInMillis());// Obtenemos los milisegundos de Fecha Registrada
+//                long diferencia = (fechaVenc.getTime() - fechaRegistrada.getTime()) / MILLSECS_PER_DAY; //Diferencia entre fechaVencimiento-fechaRegistrada(cuantos dias hay...)
+//                fechaProxima.add(Calendar.DATE, (int) diferencia);
+//                registro.setFechaRegistro(fechaVenc);
+//                registro.setFechaVencimiento(fechaProxima.getTime());
+//                rgm.edit(registro);
+//            }
+//        } catch (Exception e) {
+//            System.out.println("Exception" + e.getLocalizedMessage());
+//
+//        }
+//    }
 
-    public void registrosMantenimiento() {
-        try {
-             final long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
-            List<RegistrosMantenimiento> listaRegistro = rgm.obtenerRegistroMantenimiento(new Date());
-            for (RegistrosMantenimiento registro : listaRegistro) {
-                String tipoNotificacion = "";
-                switch (registro.getRegistrosMantenimientoPK().getIdRegistro()) {
-                    case 1:
-                        tipoNotificacion = "Revición de SOAT";
-                        break;
-                    case 2:
-                        tipoNotificacion = "Revición de MATRICULA";
-                        break;
-                    case 3:
-                        tipoNotificacion = "Revición de SEGURO";
-                        break;
-                }
-                AlertaMail mail = new AlertaMail(e.getEquipo(),v.getIdPersona().getCorreo(), "Deberia realizar una : " + tipoNotificacion, v.getIdPersona().getApellidos() + " " + v.getIdPersona().getNombres(), true);
-                mail.start();
-                Date fechaReg=registro.getFechaRegistro();// fecha registrada
-                Date fechaVenc=registro.getFechaVencimiento();// fecha de vencimiento
-                Calendar fechaRegistro = new GregorianCalendar(fechaReg.getYear() + 1900, fechaReg.getMonth(), fechaReg.getDate());
-                Calendar fechaProxima = new GregorianCalendar(fechaVenc.getYear() + 1900, fechaVenc.getMonth(), fechaVenc.getDate());
-                java.sql.Date fechaRegistrada = new java.sql.Date(fechaRegistro.getTimeInMillis());// Obtenemos los milisegundos de Fecha Registrada
-                long diferencia = (fechaVenc.getTime() - fechaRegistrada.getTime()) / MILLSECS_PER_DAY; //Diferencia entre fechaVencimiento-fechaRegistrada(cuantos dias hay...)
-                fechaProxima.add(Calendar.DATE, (int)diferencia);
-                registro.setFechaRegistro(fechaVenc);
-                registro.setFechaVencimiento(fechaProxima.getTime());
-                rgm.edit(registro);
-            }
-        } catch (Exception e) {
-            System.out.println("Exception" + e.getLocalizedMessage());
+//    private void processResponseComand(String trama) {
+//        try {
+//            if (cmdSend.size() > 0) {
+//                Comandos cmd = cmdSend.get(0);
+//                cmd.setIdTipoEstadoCmd(3);
+//                cmd.setRespuesta(trama.replace(" ", ""));
+//                cmd.setFechaHoraRespuesta(new Date());
+//                cjc.edit(cmd);
+//                cmdSend.remove(0);
+//            }
+//        } catch (Exception ex) {
+//            System.out.println("Al Editar Respuesta del Comando: " + ex.getMessage());
+//        }
+//    }
 
-        }
-    }
-
-    private void processResponseComand(String trama) {
-        try {
-            if (cmdSend.size() > 0) {
-                Comandos cmd = cmdSend.get(0);
-                cmd.setIdTipoEstadoCmd(3);
-                cmd.setRespuesta(trama.replace(" ", ""));
-                cmd.setFechaHoraRespuesta(new Date());
-                cjc.edit(cmd);
-                cmdSend.remove(0);
-            }
-        } catch (Exception ex) {
-            System.out.println("Al Editar Respuesta del Comando: " + ex.getMessage());
-        }
-    }
-
-    private void processSendComand() {
-        if (runTimerCmd) {
-            if (timeCloseChannel > 0) {
-                timeCloseChannel -= 5;
-                ///Verifico si tiene un comando de envio el equipo que llego en la trama 
-                Comandos cmd = cjc.getComandosToSend(e.getIdEquipo());
-                if (cmd != null) {
-                    this.c.write(cmd.getComando());
-                    cmdSend.add(cmd);
-                    cmd.setIdTipoEstadoCmd(2);
-                    cmd.setFechaHoraEnvio(new Date());
-                    try {
-                        cjc.edit(cmd);
-                    } catch (Exception ex) {
-                        System.out.println("Al Editar Envio de Comando: " + ex.getMessage());
-                    }
-                }
-                this.t.newTimeout(new TimerTask() {
-                    @Override
-                    public void run(Timeout tmt) throws Exception {
-                        processSendComand();
-                    }
-                }, 5, TimeUnit.SECONDS);
-            } else {
-                c.close();
-            }
-        }
-    }
+//    private void processSendComand() {
+//        if (runTimerCmd) {
+//            if (timeCloseChannel > 0) {
+//                timeCloseChannel -= 5;
+//                ///Verifico si tiene un comando de envio el equipo que llego en la trama 
+//                Comandos cmd = cjc.getComandosToSend(e.getIdEquipo());
+//                if (cmd != null) {
+//                    this.c.write(cmd.getComando());
+//                    cmdSend.add(cmd);
+//                    cmd.setIdTipoEstadoCmd(2);
+//                    cmd.setFechaHoraEnvio(new Date());
+//                    try {
+//                        cjc.edit(cmd);
+//                    } catch (Exception ex) {
+//                        System.out.println("Al Editar Envio de Comando: " + ex.getMessage());
+//                    }
+//                }
+//                this.t.newTimeout(new TimerTask() {
+//                    @Override
+//                    public void run(Timeout tmt) throws Exception {
+//                        processSendComand();
+//                    }
+//                }, 5, TimeUnit.SECONDS);
+//            } else {
+//                c.close();
+//            }
+//        }
+//    }
 
     private void sendMails() {
         List<EnvioCorreos> lem = ecjc.findEnvioCorreosEntities();

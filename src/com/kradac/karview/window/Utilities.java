@@ -43,7 +43,6 @@ public class Utilities {
      */
     public static File get() {
         if (WORKING_DIRECTORY == null) {
-
             String Recurso = Utilities.class.getSimpleName() + ".class";
             try {
                 URL url = Utilities.class.getResource(Recurso);

@@ -275,7 +275,7 @@ public class SkyEventosJpaController implements Serializable {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<SkyEventos> qry;
-            qry = em.createNamedQuery("SkyEventos.findByParametro", SkyEventos.class);
+            qry = em.createNamedQuery("SkyEventos.findByParametroEvent", SkyEventos.class);
             qry.setParameter("parametro", parameter);
             qry.setParameter("evento", event);
             return qry.getSingleResult();

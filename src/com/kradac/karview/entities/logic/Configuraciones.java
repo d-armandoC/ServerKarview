@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.kradac.karview.entities.logic;
 
 import java.io.Serializable;
@@ -31,7 +30,9 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Configuraciones.findByNombre", query = "SELECT c FROM Configuraciones c WHERE c.nombre = :nombre"),
     @NamedQuery(name = "Configuraciones.findByValor", query = "SELECT c FROM Configuraciones c WHERE c.valor = :valor")})
 public class Configuraciones implements Serializable {
+
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
@@ -43,6 +44,12 @@ public class Configuraciones implements Serializable {
     private String valor;
 
     public Configuraciones() {
+    }
+
+    public Configuraciones(Integer idConfiguracion, String nombre, String valor) {
+        this.idConfiguracion = idConfiguracion;
+        this.nombre = nombre;
+        this.valor = valor;
     }
 
     public Configuraciones(Integer idConfiguracion) {
@@ -98,7 +105,4 @@ public class Configuraciones implements Serializable {
         return "Configuraciones{" + "idConfiguracion=" + idConfiguracion + ", nombre=" + nombre + ", valor=" + valor + '}';
     }
 
-    
-    
-    
 }

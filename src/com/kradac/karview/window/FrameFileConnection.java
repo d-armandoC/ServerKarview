@@ -5,7 +5,8 @@
  */
 package com.kradac.karview.window;
 
-
+import com.kradac.karview.entities.controllers.ConfiguracionesJpaController;
+import com.kradac.karview.entities.logic.Configuraciones;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,7 +22,7 @@ import javax.swing.JOptionPane;
 
 /**
  *
- * @author Dalton
+ * @author Diego
  */
 public class FrameFileConnection extends javax.swing.JFrame {
 
@@ -57,25 +58,30 @@ public class FrameFileConnection extends javax.swing.JFrame {
             }
         }
     }
-    
+
     public FrameFileConnection(boolean valid) {
         initComponents();
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(Utilities.get() + "/config/connection.properties");
-            ResourceBundle rb = new PropertyResourceBundle(fis);
-            this.txtHostname.setText(rb.getString("hostname"));
-            this.txtPort.setText(rb.getString("port"));
-            this.txtDataBase.setText(rb.getString("database"));
-            this.txtDataBaseHistoric.setText(rb.getString("databasehistoric"));
-            this.txtUserName.setText(rb.getString("username"));
-            this.txtPassword.setText(rb.getString("password"));
-            this.txtAutStart.setText(rb.getString("autostart"));
-            this.txtPath.setText(rb.getString("pathfiles"));
-            this.txtCity.setText(rb.getString("city"));
-            this.txtLimitConDb.setText(rb.getString("limitConDb"));
+        this.txtHostname.setText(Gui.getCpdb().getHostname());
+        this.txtPort.setText("" + Gui.getCpdb().getPort());
+        this.txtDataBase.setText(Gui.getCpdb().getDatabase());
+        this.txtDataBaseHistoric.setText(Gui.getCpdb().getDatabasehistoric());
+        this.txtUserName.setText(Gui.getCpdb().getUsername());
+        this.txtPassword.setText(Gui.getCpdb().getPassword());
+        this.txtAutStart.setText("" + Gui.getCpdb().getAutostart());
+        this.txtPath.setText(Gui.getCpdb().getPath());
+        this.txtCity.setText(Gui.getCpdb().getCity());
+        this.txtLimitConDb.setText("" + Gui.getCpdb().getLimitConDb());
+
+        if (valid) {
+            Gui.getCpdb().setCjc(new ConfiguracionesJpaController(Gui.getCpdb().choosePersistenceLogicOpen()));
+            this.txtMailSend.setText(Gui.getCpdb().getCjc().findConfiguracionesByNombre("mail.user").getValor());
+            this.txtMailSend2.setText(Gui.getCpdb().getCjc().findConfiguracionesByNombre("mail.user.auxiliar.primero").getValor());
+            this.txtMailSend3.setText(Gui.getCpdb().getCjc().findConfiguracionesByNombre("mail.user.auxiliar.segundo").getValor());
+            this.txtPassSend.setText(Gui.getCpdb().getCjc().findConfiguracionesByNombre("mail.password").getValor());
+            this.txtPortTcp.setText(Gui.getCpdb().getCjc().findConfiguracionesByNombre("server.port.skp").getValor());
+            this.txtTimeoutSkp.setText(Gui.getCpdb().getCjc().findConfiguracionesByNombre("server.timeout.skp").getValor());
+        } else {
             this.tabSgbd.setEnabledAt(1, false);
-        } catch (Exception e) {
         }
     }
 
@@ -119,8 +125,6 @@ public class FrameFileConnection extends javax.swing.JFrame {
         jLabel10 = new javax.swing.JLabel();
         txtPassSend = new javax.swing.JPasswordField();
         btnSaveOtras = new javax.swing.JButton();
-        jLabel12 = new javax.swing.JLabel();
-        txtPortUdp = new javax.swing.JTextField();
         jLabel14 = new javax.swing.JLabel();
         txtMailSend2 = new javax.swing.JTextField();
         jLabel15 = new javax.swing.JLabel();
@@ -274,30 +278,30 @@ public class FrameFileConnection extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(3, 3, 3)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtAutStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel13))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel13)
-                    .addComponent(txtAutStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(jLabel17, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(txtPath, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel18, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(txtCity, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel17)
-                    .addComponent(txtPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel18)
-                    .addComponent(txtCity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel19)
                     .addComponent(txtLimitConDb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(6, 6, 6)
                 .addComponent(btnSave)
                 .addGap(36, 36, 36))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addGap(18, 18, 18)
                     .addComponent(jLabel2)
-                    .addContainerGap(403, Short.MAX_VALUE)))
+                    .addContainerGap(412, Short.MAX_VALUE)))
         );
 
         tabSgbd.addTab("Conexión SGBD", jPanel1);
@@ -332,16 +336,6 @@ public class FrameFileConnection extends javax.swing.JFrame {
         btnSaveOtras.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSaveOtrasActionPerformed(evt);
-            }
-        });
-
-        jLabel12.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jLabel12.setText("Puerto UDP:");
-
-        txtPortUdp.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        txtPortUdp.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                txtPortUdpKeyTyped(evt);
             }
         });
 
@@ -383,10 +377,7 @@ public class FrameFileConnection extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel9)
-                            .addComponent(jLabel14)
-                            .addComponent(jLabel15))
+                        .addComponent(jLabel14)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -397,12 +388,12 @@ public class FrameFileConnection extends javax.swing.JFrame {
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel7)
                                     .addComponent(jLabel10)
-                                    .addComponent(jLabel12)
-                                    .addComponent(jLabel16))
-                                .addGap(18, 18, Short.MAX_VALUE)
+                                    .addComponent(jLabel16)
+                                    .addComponent(jLabel9)
+                                    .addComponent(jLabel15))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 145, Short.MAX_VALUE)
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(txtPortTcp, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtPortUdp, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(txtTimeoutSkp, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(txtMailSend2, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
                                     .addComponent(txtMailSend)
@@ -417,31 +408,30 @@ public class FrameFileConnection extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
                     .addComponent(txtPortTcp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel12)
-                    .addComponent(txtPortUdp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel16)
                     .addComponent(txtTimeoutSkp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
-                    .addComponent(txtMailSend, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addComponent(txtMailSend, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel9)))
+                .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel14)
                     .addComponent(txtMailSend2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(12, 12, 12)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel15)
                     .addComponent(txtMailSend3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel10)
-                    .addComponent(txtPassSend, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 202, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(txtPassSend, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel10))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 184, Short.MAX_VALUE)
                 .addComponent(btnSaveOtras)
                 .addContainerGap())
         );
@@ -456,7 +446,7 @@ public class FrameFileConnection extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabSgbd, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
+            .addComponent(tabSgbd, javax.swing.GroupLayout.Alignment.TRAILING)
         );
 
         pack();
@@ -478,7 +468,7 @@ public class FrameFileConnection extends javax.swing.JFrame {
         try {
             char[] chrPass = this.txtPassword.getPassword();
             String strPass = "";
-            
+
             for (int i = 0; i < chrPass.length; i++) {
                 strPass += chrPass[i];
             }
@@ -511,11 +501,17 @@ public class FrameFileConnection extends javax.swing.JFrame {
         try {
             char[] chrPass = this.txtPassSend.getPassword();
             String strPass = "";
-            
+
             for (int i = 0; i < chrPass.length; i++) {
                 strPass += chrPass[i];
             }
-            
+            Gui.getCpdb().setCjc(new ConfiguracionesJpaController(Gui.getCpdb().choosePersistenceLogicOpen()));
+            Gui.getCpdb().getCjc().edit(new Configuraciones(4, "mail.password", strPass));
+            Gui.getCpdb().getCjc().edit(new Configuraciones(14, "mail.user", this.txtMailSend.getText()));
+            Gui.getCpdb().getCjc().edit(new Configuraciones(15, "mail.user.auxiliar.primero", this.txtMailSend2.getText()));
+            Gui.getCpdb().getCjc().edit(new Configuraciones(16, "mail.user.auxiliar.segundo", this.txtMailSend3.getText()));
+            Gui.getCpdb().getCjc().edit(new Configuraciones(17, "server.port.skp", this.txtPortTcp.getText()));
+            Gui.getCpdb().getCjc().edit(new Configuraciones(19, "server.timeout.skp", this.txtTimeoutSkp.getText()));
             JOptionPane.showMessageDialog(this, "Datos Guardados Correctamente.");
         } catch (Exception ex) {
             System.out.println(ex);
@@ -546,7 +542,7 @@ public class FrameFileConnection extends javax.swing.JFrame {
                         p = Pattern.compile("[^A-Za-z0-9\\.\\@_\\-~#]+");
                         m = p.matcher(cadena);
                         if (!m.find()) {
-                            
+
                         } else {
                             evt.consume();
                         }
@@ -565,10 +561,6 @@ public class FrameFileConnection extends javax.swing.JFrame {
     private void txtAutStartKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtAutStartKeyTyped
         // TODO add your handling code here:
     }//GEN-LAST:event_txtAutStartKeyTyped
-
-    private void txtPortUdpKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtPortUdpKeyTyped
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtPortUdpKeyTyped
 
     private void txtMailSend2KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtMailSend2KeyTyped
         // TODO add your handling code here:
@@ -603,7 +595,7 @@ public class FrameFileConnection extends javax.swing.JFrame {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
-                    
+
                 }
             }
         } catch (ClassNotFoundException ex) {
@@ -633,7 +625,6 @@ public class FrameFileConnection extends javax.swing.JFrame {
     private javax.swing.JButton btnSave;
     private javax.swing.JButton btnSaveOtras;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
@@ -666,7 +657,6 @@ public class FrameFileConnection extends javax.swing.JFrame {
     private javax.swing.JTextField txtPath;
     private javax.swing.JTextField txtPort;
     private javax.swing.JTextField txtPortTcp;
-    private javax.swing.JTextField txtPortUdp;
     private javax.swing.JTextField txtTimeoutSkp;
     private javax.swing.JTextField txtUserName;
     // End of variables declaration//GEN-END:variables

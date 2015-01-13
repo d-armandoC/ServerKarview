@@ -79,9 +79,13 @@ public class Gui extends javax.swing.JFrame {
     }
 
     public static void stop() {
-         btnStart.setEnabled(true);
+        try {
+        btnStart.setEnabled(true);
         btnStop.setEnabled(false);
         thSkp.getEs().stop();
+        } catch (NullPointerException e) {
+           
+        }
     }
 
     /**

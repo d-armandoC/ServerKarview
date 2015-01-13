@@ -257,19 +257,22 @@ public class EquiposJpaController implements Serializable {
             em.close();
         }
     }
-    
         public Equipos findEquiposByEquipo(String equipo) {
         EntityManager em = getEntityManager();
+        Equipos eq = null;
         try {
             TypedQuery<Equipos> qry;
             qry = em.createNamedQuery("Equipos.findByEquipo", Equipos.class);
             qry.setParameter("equipo", equipo);
-            return qry.getSingleResult();
+            if (qry.getSingleResult() != null) {
+                eq = qry.getSingleResult();
+            }
         } catch (NoResultException e) {
-            return null;
+            eq = null;
         } finally {
             em.close();
         }
+        return eq;
     }
     
 }
