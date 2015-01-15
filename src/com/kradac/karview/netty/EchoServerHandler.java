@@ -100,6 +100,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
     private SkyEventos se;
     private final Utilities u;
     private final Timer t;
+    private int tipoEquipoGPRS;
 
     public EchoServerHandler(Timer t) {
         this.u = new Utilities();
@@ -148,11 +149,8 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
         }
         this.data = auxdata;
         buf.clear();
-
         System.out.println("Trama que llega: " + this.data);
         if (this.data.indexOf("0@80") == 0) {
-            System.out.println("Entre al encabezado [0@80]");
-            System.out.println("Trama: " + this.data);
             System.out.println("Trama SKP+ +param: [" + auxdata + "]");
             u.sendToFile(3, "skp+", this.data);
             tramaMinuto(this.data.substring(5));
@@ -160,13 +158,15 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             System.out.println("Trama Conexión SKP+: [" + auxdata + "]");
             u.sendToFile(2, "skp+", this.data);
             tramaConecxion(u.clearDataConnection(this.data));
+             tipoEquipoGPRS=1;
         } else if (this.data.indexOf("0@80") == 0) {
             System.out.println("Trama Conexión SKP: [" + auxdata + "]");
             u.sendToFile(2, "skp", this.data);
             tramaConecxion(u.clearDataConnection(this.data));
+             tipoEquipoGPRS=2;
         } else if (this.data.indexOf("0150") == 0) {
             System.out.println("Respuesta Cmd: [" + auxdata + "]");
-//                    processResponseComand(this.data.substring(5));
+            processResponseComand(this.data.substring(5));
         } else if (this.data.indexOf("0420") == 0) {
             System.out.println("Trama SKP: [" + data + "]");
             u.sendToFile(3, "skp", this.data);
@@ -257,7 +257,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                         dijc.create(new DatoInvalidos(2, new Date(), e.getEquipo(), this.data, ex.getMessage()));
                     }
                 }
-//                processSendComand();
+                processSendComand();
             }
         }
     }
@@ -310,6 +310,7 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
                     }
                 }
                 try {
+                    System.out.println(objCalDevice.getTime());
                     dsjc.create(new DatoSpks(new DatoSpksPK(e.getIdEquipo(), objCalDevice.getTime(), objCalDevice.getTime(), se.getIdSkyEvento()), new Date(), latitud, longitud, speed, course,
                             Short.parseShort("" + gpio.charAt(8)),
                             Short.parseShort("" + gpio.charAt(7)),
@@ -508,49 +509,54 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
 //        }
 //    }
 
-//    private void processResponseComand(String trama) {
-//        try {
-//            if (cmdSend.size() > 0) {
-//                Comandos cmd = cmdSend.get(0);
-//                cmd.setIdTipoEstadoCmd(3);
-//                cmd.setRespuesta(trama.replace(" ", ""));
-//                cmd.setFechaHoraRespuesta(new Date());
-//                cjc.edit(cmd);
-//                cmdSend.remove(0);
-//            }
-//        } catch (Exception ex) {
-//            System.out.println("Al Editar Respuesta del Comando: " + ex.getMessage());
-//        }
-//    }
+    private void processResponseComand(String trama) {
+        System.out.println("Respuesta del Comando: "+trama);
+        try {
+            if (cmdSend.size() > 0) {
+                Comandos cmd = cmdSend.get(0);
+                cmd.setIdTipoEstadoCmd(3);
+                System.out.println("coomando >>>>> "+trama.replace(" ", ""));
+                cmd.setRespuesta(trama.replace(" ", ""));
+                cmd.setFechaHoraRespuesta(new Date());
+                System.out.println(cmd.getComando());
+                cjc.edit(cmd);
+                cmdSend.remove(0);
+            }
+        } catch (Exception ex) {
+            System.out.println("Al Editar Respuesta del Comando: " + ex.getMessage());
+        }
+    }
 
-//    private void processSendComand() {
-//        if (runTimerCmd) {
-//            if (timeCloseChannel > 0) {
-//                timeCloseChannel -= 5;
-//                ///Verifico si tiene un comando de envio el equipo que llego en la trama 
-//                Comandos cmd = cjc.getComandosToSend(e.getIdEquipo());
-//                if (cmd != null) {
-//                    this.c.write(cmd.getComando());
-//                    cmdSend.add(cmd);
-//                    cmd.setIdTipoEstadoCmd(2);
-//                    cmd.setFechaHoraEnvio(new Date());
-//                    try {
-//                        cjc.edit(cmd);
-//                    } catch (Exception ex) {
-//                        System.out.println("Al Editar Envio de Comando: " + ex.getMessage());
-//                    }
-//                }
-//                this.t.newTimeout(new TimerTask() {
-//                    @Override
-//                    public void run(Timeout tmt) throws Exception {
-//                        processSendComand();
-//                    }
-//                }, 5, TimeUnit.SECONDS);
-//            } else {
-//                c.close();
-//            }
-//        }
-//    }
+    private void processSendComand() {
+        if (runTimerCmd) {
+            if (timeCloseChannel > 0) {
+                timeCloseChannel -= 5;
+                ///Verifico si tiene un comando de envio el equipo que llego en la trama 
+                Comandos cmd = cjc.getComandosToSend(e.getIdEquipo());
+                if (cmd != null) {
+                    this.c.write(cmd.getComando()+"%%"+tipoEquipoGPRS);
+                    cmdSend.add(cmd);
+                    cmd.setIdTipoEstadoCmd(2);
+                    cmd.setFechaHoraEnvio(new Date());
+                    String msj = "Enviando [" + cmd.getComando() + "] -> [" + e.getEquipo() + "]";
+                    System.out.println(msj);
+                    try {
+                        cjc.edit(cmd);
+                    } catch (Exception ex) {
+                        System.out.println("Al Editar Envio de Comando: " + ex.getMessage());
+                    }
+                }
+                this.t.newTimeout(new TimerTask() {
+                    @Override
+                    public void run(Timeout tmt) throws Exception {
+                        processSendComand();
+                    }
+                }, 5, TimeUnit.SECONDS);
+            } else {
+                c.close();
+            }
+        }
+    }
 
     private void sendMails() {
         List<EnvioCorreos> lem = ecjc.findEnvioCorreosEntities();

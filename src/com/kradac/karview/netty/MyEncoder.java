@@ -16,11 +16,11 @@ import io.netty.handler.codec.MessageToByteEncoder;
 public class MyEncoder extends MessageToByteEncoder<Object> {
        @Override
        protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf buf) throws Exception {
-        if (msg instanceof String) {
             String msj = String.valueOf(msg);
             String [] data = msj.split("%%");
-            msj = data[1];
-            if (Integer.parseInt(data[0]) == 2) {
+            msj = data[0];
+            System.out.println(">>> "+Integer.parseInt(data[1]));
+            if (Integer.parseInt(data[1]) == 1) {
                 System.out.println("pas1");
                 buf.writeByte(0x00);
                 buf.writeByte(msj.length() + 4 + 2 + 1); //Aumenta un 1 por el 0 que se aumenta
@@ -40,7 +40,6 @@ public class MyEncoder extends MessageToByteEncoder<Object> {
                 buf.writeByte(0x00);
                 buf.writeBytes(msj.getBytes());
             }            
-        } 
         }
 
     }
