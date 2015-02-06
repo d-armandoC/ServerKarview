@@ -165,8 +165,17 @@ public class EchoServerHandler extends ChannelHandlerAdapter {
             tramaConecxion(u.clearDataConnection(this.data));
              tipoEquipoGPRS=2;
         } else if (this.data.indexOf("0150") == 0) {
-            System.out.println("Respuesta Cmd: [" + auxdata + "]");
-            processResponseComand(this.data.substring(5));
+              u.sendToFile(5, "skp", data);
+            if (registered) {
+                System.out.println("Respuesta Comando [5] [" + data + "], Equipo: [" + v.getIdEquipo().getEquipo() + "]");
+                processResponseComand(this.data.substring(5));
+            } else {
+                System.out.println("Respuesta Comando [5] [" + data + "], Equipo: [Desconocido]");
+                System.out.println("Dato Enviado a Tabla de Invalidos por no estar registrado en el sistema [Desconocido].");
+               dijc.create(new DatoInvalidos(3, new Date(), e.getEquipo(), this.data));
+            }
+//            System.out.println("Respuesta Cmd: [" + auxdata + "]");
+//            processResponseComand(this.data.substring(5));
         } else if (this.data.indexOf("0420") == 0) {
             System.out.println("Trama SKP: [" + data + "]");
             u.sendToFile(3, "skp", this.data);
